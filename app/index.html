@@ -33,14 +33,14 @@ main{flex:1;display:flex;flex-direction:column;justify-content:space-evenly}
 header{display:flex;flex-direction:column;align-items:center;text-align:center;padding:2px 0 0;gap:10px}
 .day .date{color:var(--muted);font-size:14px;font-weight:600;letter-spacing:.2px}
 .day h1{margin:0;font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--faint)}
-.total{position:relative;width:118px;height:118px}
-.total svg{width:118px;height:118px;transform:rotate(-90deg)}
+.total{position:relative;width:126px;height:126px}
+.total svg{width:126px;height:126px;transform:rotate(-90deg)}
 .total circle{fill:none;stroke-width:11;stroke-linecap:round}
 .total .tr{stroke:color-mix(in srgb,var(--goal) 22%,var(--bg))} .total .tb{stroke:var(--goal);transition:stroke-dashoffset .5s cubic-bezier(.3,.9,.3,1)}
 .total.zero .tb{opacity:0}
 .total .t-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1}
 .total .t-num span{font-weight:800;font-size:44px;letter-spacing:-2px;font-variant-numeric:tabular-nums}
-.total .t-num small{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+.total .t-num small{display:block;font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin-top:2px}
 .total.all .t-num span{color:var(--goal)}
 .day .sum{font-size:15px;color:var(--muted);font-weight:500}
 .day .sum b{color:var(--text);font-weight:700}
@@ -125,7 +125,7 @@ h2{margin:0 2px 8px;font-size:12px;font-weight:700;letter-spacing:.8px;text-tran
 <header>
   <div class="day"><h1 hidden>Voedingscheck</h1><div class="date" id="date"></div></div>
   <div class="total" id="total" aria-live="polite">
-    <svg viewBox="0 0 118 118"><circle class="tr" cx="59" cy="59" r="52.5"/><circle class="tb" id="totalBar" cx="59" cy="59" r="52.5" stroke-dasharray="329.87" stroke-dashoffset="329.87"/></svg>
+    <svg viewBox="0 0 126 126"><circle class="tr" cx="63" cy="63" r="56.5"/><circle class="tb" id="totalBar" cx="63" cy="63" r="56.5" stroke-dasharray="355.0" stroke-dashoffset="355.0"/></svg>
     <div class="t-num"><div><span id="totalNum">0</span><small>van 7 doelen</small></div></div>
   </div>
   <div class="day" hidden><div class="sum" id="sum"></div></div>
@@ -220,7 +220,7 @@ function updateTotal(){
   const goals=ITEMS.filter(i=>i.kind==='goal');
   const done=goals.filter(i=>(state.counts[i.id]||0)>=i.target).length;
   document.getElementById('totalNum').textContent=done; document.getElementById('total').dataset.frac=done+'/'+goals.length;
-  document.getElementById('totalBar').style.strokeDashoffset=(329.87*(1-done/goals.length)).toFixed(1);
+  document.getElementById('totalBar').style.strokeDashoffset=(355.0*(1-done/goals.length)).toFixed(1);
   document.getElementById('total').classList.toggle('all',done===goals.length);
   document.getElementById('total').classList.toggle('zero',done===0);
   const left=goals.length-done;
