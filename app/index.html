@@ -70,7 +70,6 @@ h2{margin:0 2px 8px;font-size:12px;font-weight:700;letter-spacing:.8px;text-tran
 .tile[data-n="0"] .ring .bar{opacity:0}
 .count{font-size:14px;font-weight:700;color:var(--muted);letter-spacing:0;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:center;gap:0;margin-top:-4px}
 .count small{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:0;transition:color .3s}
-.count .lim{display:none}
 .name{font-size:14.5px;font-weight:700;color:var(--text);letter-spacing:-.2px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .badge{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--c);color:var(--ink);box-shadow:0 0 0 3px var(--bg);display:grid;place-items:center;
   opacity:0;transform:scale(.3);transition:transform .35s cubic-bezier(.2,.9,.3,1.6),opacity .2s}
@@ -117,7 +116,7 @@ h2{margin:0 2px 8px;font-size:12px;font-weight:700;letter-spacing:.8px;text-tran
 @media (prefers-color-scheme: light){
   :root{--bg:#f2f2f7;--card:#ffffff;--card-2:#e9e9ef;--text:#1c1c1e;--muted:#6e6e73;--faint:#9a9aa0;--goal:#2fbf63;--limit:#f0a11f}
 }
-@media (prefers-reduced-motion: reduce){.tile.pop{animation:none}.ring .bar,.icon,.badge,.disc{transition:none}}
+@media (prefers-reduced-motion: reduce){.tile.pop{animation:none}.ring .bar,.icon,.disc{transition:none}}
 </style>
 </head>
 <body>
@@ -180,11 +179,8 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{}};save();renderAll();} }
 
 const R=46, C=2*Math.PI*R;
-const CHECK='<svg viewBox="0 0 12 12"><path d="M2.5 6.5l2.5 2.5 4.5-5.5"/></svg>';
 function tileHTML(it){
-  const count = it.kind==='max'
-    ? `<div class="count"><span class="n">0</span><small>/${it.target}</small></div>`
-    : `<div class="count"><span class="n">0</span><small>/${it.target}</small></div>`;
+  const count = `<div class="count"><span class="n">0</span><small>/${it.target}</small></div>`;
   return `<button class="tile ${it.kind}" id="t-${it.id}" data-id="${it.id}" data-n="0" aria-label="${it.name}">
     <span class="minus" data-minus="${it.id}" aria-label="één terug">−</span>
     <div class="ring"><svg class="r" viewBox="0 0 100 100">
@@ -209,7 +205,6 @@ function update(it, pop){
   const frac=Math.min(n/it.target,1);
   el.querySelector('.bar').style.strokeDashoffset=(C*(1-frac)).toFixed(2);
   const nEl=el.querySelector('.n'); if(nEl) nEl.textContent=n;
-  const lim=el.querySelector('.lim'); if(lim) lim.textContent=(n>it.target)?'te veel':'max';
   el.dataset.n=n;
   el.classList.toggle('done', n===it.target);
   el.classList.toggle('over', it.kind==='max' && n>it.target);
