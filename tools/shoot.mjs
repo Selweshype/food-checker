@@ -29,7 +29,8 @@ for (const [name,counts] of Object.entries(states)) {
   await page.evaluate(([k,c])=>localStorage.setItem('voedingscheck.v1',JSON.stringify({date:k,counts:c})),[key,counts]);
   await page.reload(); await page.waitForTimeout(700);
   await page.screenshot({path:path.join(out,`${name}.png`)});
-  await page.screenshot({path:path.join(out,`${name}-full.png`),fullPage:true});
+  await page.evaluate(()=>{const p=document.getElementById('pages'); if(p) p.scrollTo({left:p.clientWidth,behavior:'instant'});}); await page.waitForTimeout(250);
+  await page.screenshot({path:path.join(out,`${name}-p2.png`)});
   console.log('shot',name);
 }
 await browser.close(); srv.close();

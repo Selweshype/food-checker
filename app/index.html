@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <title>Voedingscheck</title>
 <meta name="description" content="Dagelijkse voedingscheck: vink af wat je vandaag hebt gegeten.">
-<meta name="theme-color" content="#0b0b10">
+<meta name="theme-color" content="#2fb45d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,127 +15,92 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
 :root{
-  --bg:#0b0b10; --card:#15151c; --card-2:#1c1c25;
-  --text:#f5f5f7; --muted:#8b8b97; --faint:#5a5a66;
-  --ink:#0b0b10;
-  --goal:#3ddc73; --limit:#ffb340; --over:#ff4d3d;
-  --r:22px; --gap:14px;
+  --g1:#34b866; --g2:#17a3a4; --g3:#2b78d6;
+  --white:#fff; --track:rgba(255,255,255,.32); --ink:#101418; --over:#ff3b30;
+  --ring:140px; --stroke:9;
+  --cond:"Avenir Next Condensed","AvenirNextCondensed-Bold","Roboto Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,system-ui,sans-serif;
-  -webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
-body{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 16px);
-  -webkit-user-select:none;user-select:none;touch-action:manipulation;display:flex;flex-direction:column}
-main{flex:1;display:flex;flex-direction:column;justify-content:space-evenly}
-
-/* hero: the day itself */
-header{display:flex;flex-direction:column;align-items:center;text-align:center;padding:2px 0 0;gap:10px}
-.day .date{color:var(--muted);font-size:14px;font-weight:600;letter-spacing:.2px}
-.day h1{margin:0;font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--faint)}
-.total{position:relative;width:126px;height:126px}
-.total svg{width:126px;height:126px;transform:rotate(-90deg)}
-.total circle{fill:none;stroke-width:11;stroke-linecap:round}
-.total .tr{stroke:color-mix(in srgb,var(--goal) 22%,var(--bg))} .total .tb{stroke:var(--goal);transition:stroke-dashoffset .5s cubic-bezier(.3,.9,.3,1)}
-.total.zero .tb{opacity:0}
-.total .t-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1}
-.total .t-num span{font-weight:800;font-size:44px;letter-spacing:-2px;font-variant-numeric:tabular-nums}
-.total .t-num small{display:block;font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin-top:2px}
-.total.all .t-num span{color:var(--goal)}
-.day .sum{font-size:15px;color:var(--muted);font-weight:500}
-.day .sum b{color:var(--text);font-weight:700}
-
-h2{margin:0 2px 8px;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
-
-/* rings on the page, no cards */
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
-.grid.four{grid-template-columns:repeat(4,1fr);gap:6px}
-.four .tile{padding:8px 0}
-.tile{position:relative;background:transparent;border-radius:var(--r);padding:8px 2px 8px;
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;
-  border:0;color:var(--text);font:inherit;cursor:pointer;min-width:0;--c:var(--goal);
+html,body{margin:0;height:100%;color:var(--white);
+  background:linear-gradient(180deg,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%) fixed;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overscroll-behavior:none}
+body{display:flex;flex-direction:column;-webkit-user-select:none;user-select:none;touch-action:manipulation;overflow:hidden}
+.pages{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.pages::-webkit-scrollbar{display:none}
+.page{flex:none;width:100vw;height:100%;scroll-snap-align:start;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);
+  padding:calc(env(safe-area-inset-top) + 34px) 12px 14px;align-items:start;justify-items:center}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;
+  background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0;
   transition:transform .12s cubic-bezier(.2,.8,.2,1);will-change:transform}
-.tile.max{--c:var(--limit)}
-.tile:active{transform:scale(.94)}
+.tile:active{transform:scale(.95)}
 .tile.pop{animation:pop .36s cubic-bezier(.2,.9,.3,1.4)}
-@keyframes pop{0%{transform:scale(.94)}55%{transform:scale(1.05)}100%{transform:scale(1)}}
-.ring{position:relative;width:84px;height:84px}
+@keyframes pop{0%{transform:scale(.95)}55%{transform:scale(1.04)}100%{transform:scale(1)}}
+.ring{position:relative;width:var(--ring);height:var(--ring)}
 .ring svg.r{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
-.ring circle{fill:none;stroke-width:8;stroke-linecap:round}
-.ring .track{stroke:color-mix(in srgb,var(--c) 30%,var(--bg));transition:stroke .3s}
-.ring .bar{stroke:var(--c);opacity:1;transition:stroke-dashoffset .45s cubic-bezier(.3,.9,.3,1),stroke .3s,opacity .2s}
-.ring .disc{fill:var(--c);opacity:0;transform:scale(.6);transform-origin:center;transition:opacity .25s,transform .35s cubic-bezier(.2,.9,.3,1.4)}
-.ring .icon{position:absolute;inset:0;display:grid;place-items:center;color:var(--c);transition:transform .3s cubic-bezier(.2,.9,.3,1.4),color .3s}
-.ring .icon svg{width:42px;height:42px;fill:currentColor;stroke:none}
+.ring svg.r circle{fill:none;stroke-width:var(--stroke);stroke-linecap:butt}
+.ring .track{stroke:var(--track)}
+.ring .bar{stroke:var(--white);transition:stroke-dashoffset .45s cubic-bezier(.3,.9,.3,1),opacity .2s}
+.ring svg.r .disc{fill:var(--white);opacity:0;transform:scale(.7);transform-origin:center;transition:opacity .25s,transform .35s cubic-bezier(.2,.9,.3,1.4)}
+.ring .icon{position:absolute;inset:0;display:grid;place-items:center;color:var(--white);transition:transform .3s cubic-bezier(.2,.9,.3,1.4),color .3s}
+.ring .icon svg{width:74px;height:74px;fill:currentColor;stroke:none;margin-top:-12px}
+.ring .n{position:absolute;left:0;right:0;bottom:17px;text-align:center;font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.2px;font-variant-numeric:tabular-nums;transition:color .3s}
 .tile[data-n="0"] .ring .bar{opacity:0}
-.count{font-size:14px;font-weight:700;color:var(--muted);letter-spacing:0;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:center;gap:0;margin-top:-4px}
-.count small{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:0;transition:color .3s}
-.name{font-size:14.5px;font-weight:700;color:var(--text);letter-spacing:-.2px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* done: the ring becomes a solid disc, the glyph turns ink */
+.label{font-family:var(--cond);font-weight:700;font-size:20px;line-height:1.1;letter-spacing:.2px;text-transform:uppercase;text-align:center;max-width:170px;text-wrap:balance}
+.label .pre{font-size:17px;margin-right:6px;position:relative;top:-1px}
+.label .amt{display:block;font-size:15px;font-weight:600;opacity:.85;letter-spacing:0;text-transform:none;margin-top:2px}
+/* done: white disc, ink glyph */
 .tile.done .ring .disc{opacity:1;transform:scale(1)}
 .tile.done .ring .track,.tile.done .ring .bar{opacity:0}
-.tile.done .icon{color:var(--ink);transform:scale(1.08)}
-.tile.max.done .name{color:var(--c)}                    /* limit reached: amber disc, amber words */
-/* over the maximum: red disc, red words */
-.tile.over{--c:var(--over)}
-.tile.over .ring .disc{opacity:1;transform:scale(1)}
+.tile.done .icon{color:var(--ink);transform:scale(1.04)}
+.tile.done .ring .n{color:var(--ink)}
+/* a limit reached is a complete ring, not a win */
+.tile.max.done .ring .disc{opacity:0}
+.tile.max.done .ring .bar{opacity:1}
+.tile.max.done .icon{color:var(--white);transform:none}
+.tile.max.done .ring .n{color:var(--white)}
+/* over the limit: red disc */
+.tile.over .ring svg.r .disc{opacity:1;transform:scale(1);fill:var(--over)}
 .tile.over .ring .track,.tile.over .ring .bar{opacity:0}
-.tile.over .icon{color:var(--ink);transform:scale(1.08)}
-.tile.over .count,.tile.over .count small{color:var(--over)}
-.tile.over .name{color:var(--over);font-weight:700}
-/* undo chip: appears only on the tile you just tapped */
-.minus{position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;background:var(--card-2);color:var(--text);box-shadow:0 0 0 3px var(--bg);
-  display:grid;place-items:center;font-size:17px;font-weight:700;line-height:1;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s;pointer-events:none}
+.tile.over .icon{color:var(--white)}
+.tile.over .label{color:#ffd2ce}
+/* undo satellite, appears on the tile you just tapped */
+.minus{position:absolute;right:-6px;bottom:-4px;width:44px;height:44px;border-radius:50%;background:var(--white);color:var(--ink);
+  display:grid;place-items:center;font-size:26px;font-weight:700;line-height:1;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,.15)}
 .tile.recent .minus{opacity:1;transform:scale(1);pointer-events:auto}
-.minus:active{transform:scale(.85)}
-
-/* dinner: same rings, the amount sits in the count slot */
-.four .tile .minus{display:none}
-.sub{font-size:12.5px;color:var(--muted);font-weight:700;line-height:1;letter-spacing:-.1px;white-space:nowrap;margin-top:-4px;transition:color .3s}
-
-
-/* quiet chrome */
-.more{margin:12px auto 0;width:36px;height:36px;border-radius:50%;border:0;background:var(--card);color:var(--muted);font:inherit;display:grid;place-items:center;cursor:pointer}
-.more svg{width:18px;height:18px;fill:currentColor}
-.sheet{display:none;margin:10px auto 0;max-width:340px;background:var(--card);border-radius:18px;padding:6px;text-align:center}
+/* summary + more slots */
+.tile.sum .ring .n{font-size:17px;bottom:15px}
+.tile.more .ring .track{stroke:var(--track)}
+.tile.more .icon svg{margin-top:0;width:56px;height:56px}
+.tile.sum .icon svg{width:64px;height:64px}
+/* chrome */
+.dots{height:calc(env(safe-area-inset-bottom) + 34px);display:flex;justify-content:center;align-items:flex-start;gap:9px;padding-top:6px}
+.dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.45)} .dots i.on{background:var(--white)}
+.sheet{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 20px);background:rgba(255,255,255,.96);color:var(--ink);border-radius:22px;padding:8px;display:none;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 .sheet.open{display:block}
-.sheet p{margin:8px 10px 10px;color:var(--muted);font-size:13px;line-height:1.5}
-.sheet p b{color:var(--text);font-weight:600}
-.sheet .key{display:flex;justify-content:center;gap:14px;margin:0 0 10px;font-size:12px;color:var(--muted);font-weight:600}
-.sheet .key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-.sheet button{display:block;width:100%;background:var(--card-2);border:0;color:var(--text);font:inherit;font-size:15px;font-weight:600;padding:13px;border-radius:13px;cursor:pointer}
-.sheet button:active{opacity:.7}
+.sheet p{margin:10px 12px 12px;font-size:14px;line-height:1.5;color:#3a3f45}
+.sheet p b{color:var(--ink);font-weight:700}
+.sheet .key{display:flex;gap:16px;justify-content:center;margin:0 0 10px;font-size:13px;color:#3a3f45;font-weight:600}
+.sheet button{display:block;width:100%;background:#eef1f4;border:0;color:var(--ink);font:inherit;font-size:16px;font-weight:600;padding:14px;border-radius:14px;cursor:pointer;margin-top:6px}
 .sheet button.arm{color:var(--over)}
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%) translateY(20px);
-  background:var(--card-2);color:var(--text);padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;
-  transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap;max-width:calc(100vw - 32px)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 48px);transform:translateX(-50%) translateY(20px);
+  background:rgba(16,20,24,.85);color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);white-space:nowrap;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-@media (prefers-color-scheme: light){
-  :root{--bg:#f2f2f7;--card:#ffffff;--card-2:#e9e9ef;--text:#1c1c1e;--muted:#6e6e73;--faint:#9a9aa0;--goal:#2fbf63;--limit:#f0a11f}
-}
 @media (prefers-reduced-motion: reduce){.tile.pop{animation:none}.ring .bar,.icon,.disc{transition:none}}
 </style>
 </head>
 <body>
-<main>
-<header>
-  <div class="day"><h1 hidden>Voedingscheck</h1><div class="date" id="date"></div></div>
-  <div class="total" id="total" aria-live="polite">
-    <svg viewBox="0 0 126 126"><circle class="tr" cx="63" cy="63" r="56.5"/><circle class="tb" id="totalBar" cx="63" cy="63" r="56.5" stroke-dasharray="355.0" stroke-dashoffset="355.0"/></svg>
-    <div class="t-num"><div><span id="totalNum">0</span><small>van 7 doelen</small></div></div>
-  </div>
-  <div class="day" hidden><div class="sum" id="sum"></div></div>
-</header>
-
-<section><h2 id="dagLabel">Door de dag</h2><div class="grid" id="dag"></div></section>
-<section><h2 id="avondLabel">Avondmaaltijd</h2><div class="grid four" id="avond"></div></section>
-</main>
-
-<button class="more" id="more" aria-label="Meer"><svg viewBox="0 0 18 18"><circle cx="4" cy="9" r="1.7"/><circle cx="9" cy="9" r="1.7"/><circle cx="14" cy="9" r="1.7"/></svg></button>
+<div class="pages" id="pages">
+  <section class="page" id="p1"></section>
+  <section class="page" id="p2"></section>
+</div>
+<div class="dots" id="dots"><i class="on"></i><i></i></div>
 <div class="sheet" id="sheet">
-  <p><b>Tik</b> een ring om af te vinken. <b>Houd vast</b> of tik <b>−</b> om één terug te zetten.<br>Elke dag begint de lijst leeg.</p>
-  <div class="key"><span><i style="background:var(--goal)"></i>doel</span><span><i style="background:var(--limit)"></i>maximum</span><span><i style="background:var(--over)"></i>te veel</span></div>
+  <p><b>Tik</b> een ring om af te vinken. <b>Houd vast</b> of tik <b>−</b> om één terug te zetten. Elke dag begint de lijst leeg.</p>
+  <div class="key"><span>♥ doel</span><span>⊘ maximum</span><span style="color:var(--over)">● te veel</span></div>
   <button id="reset">Dag opnieuw beginnen</button>
+  <button id="closeSheet">Sluiten</button>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -152,18 +117,21 @@ const G = {
   broccoli:'<g transform="translate(-0.00 0.14)"><path d="M6.3 12.6a3.4 3.4 0 01.7-6.6A4.3 4.3 0 0112 2.8a4.3 4.3 0 015 3.2 3.4 3.4 0 01.7 6.6H6.3z"/><path d="M9.3 13.8h5.4v5.4a1.8 1.8 0 01-1.8 1.8h-1.8a1.8 1.8 0 01-1.8-1.8v-5.4z"/></g>',
   rice:'<g transform="translate(0.00 -1.30)"><path d="M3 11.8h18a9 9 0 01-18 0z"/><path d="M6.2 10.4c1.1-2.9 3.2-4.6 5.8-4.6s4.7 1.7 5.8 4.6H6.2z"/></g>',
 };
+G.check='<path d="M9.2 18.6 3.4 12.8l2.3-2.3 3.5 3.5 9.1-9.1 2.3 2.3z"/>';
+G.more='<circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/>';
 const ITEMS = [
-  {id:'volkoren', name:'Volkoren', target:8, kind:'goal', icon:'wheat', g:'dag'},
-  {id:'zuivel',   name:'Zuivel',   target:4, kind:'goal', icon:'milk', g:'dag'},
-  {id:'fruit',    name:'Fruit',    target:3, kind:'goal', icon:'apple', g:'dag'},
-  {id:'kaas',     name:'Kaas',     target:2, kind:'max',  icon:'cheese', g:'dag'},
-  {id:'pindakaas',name:'Pindakaas',target:3, kind:'max',  icon:'peanut', g:'dag'},
-  {id:'eiwit',    name:'Eiwitpoeder', target:2, kind:'max', icon:'shaker', g:'dag'},
-  {id:'groenten', name:'Groenten', target:1, sub:'≥ 200 g', kind:'goal', icon:'broccoli', g:'avond'},
-  {id:'graan',    name:'Granen',   target:1, sub:'75–100 g', kind:'goal', icon:'rice', g:'avond'},
-  {id:'eiwitbron',name:'Eiwitbron', target:1, sub:'100–135 g', kind:'goal', icon:'bean', g:'avond'},
-  {id:'olijfolie',name:'Olijfolie', target:1, sub:'1 eetlepel', kind:'goal', icon:'olive', g:'avond'},
+  {id:'volkoren', name:'Volkoren', target:8, kind:'goal', icon:'wheat', page:1},
+  {id:'zuivel',   name:'Zuivel',   target:4, kind:'goal', icon:'milk', page:1},
+  {id:'fruit',    name:'Fruit',    target:3, kind:'goal', icon:'apple', page:1},
+  {id:'kaas',     name:'Kaas',     target:2, kind:'max',  icon:'cheese', page:1},
+  {id:'pindakaas',name:'Pindakaas',target:3, kind:'max',  icon:'peanut', page:1},
+  {id:'eiwit',    name:'Eiwitpoeder', target:2, kind:'max', icon:'shaker', page:1},
+  {id:'groenten', name:'Groenten', target:1, amt:'≥ 200 g', kind:'goal', icon:'broccoli', page:2},
+  {id:'graan',    name:'Granen',   target:1, amt:'75–100 g', kind:'goal', icon:'rice', page:2},
+  {id:'eiwitbron',name:'Eiwitbron', target:1, amt:'100–135 g', kind:'goal', icon:'bean', page:2},
+  {id:'olijfolie',name:'Olijfolie', target:1, amt:'1 eetlepel', kind:'goal', icon:'olive', page:2},
 ];
+const GOALS=ITEMS.filter(i=>i.kind==='goal');
 const KEY='voedingscheck.v1';
 const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 let state=load();
@@ -175,33 +143,31 @@ function load(){
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{}};save();renderAll();} }
 
-const R=46, C=2*Math.PI*R;
+const R=45.5, C=2*Math.PI*R;
+function ringSVG(){return `<svg class="r" viewBox="0 0 100 100"><circle class="disc" cx="50" cy="50" r="50"/><circle class="track" cx="50" cy="50" r="${R}"/><circle class="bar" cx="50" cy="50" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>`}
 function tileHTML(it){
-  const count = `<div class="count"><span class="n">0</span><small>/${it.target}</small></div>`;
+  const pre = it.kind==='max' ? '<span class="pre">⊘</span>' : '<span class="pre">♥</span>';
+  const amt = it.amt ? `<span class="amt">${it.amt}</span>` : '';
+  const n = it.target>1 ? `<div class="n"><span class="v">0</span>/${it.target}</div>` : `<div class="n" hidden><span class="v">0</span></div>`;
   return `<button class="tile ${it.kind}" id="t-${it.id}" data-id="${it.id}" data-n="0" aria-label="${it.name}">
-    <span class="minus" data-minus="${it.id}" aria-label="één terug">−</span>
-    <div class="ring"><svg class="r" viewBox="0 0 100 100">
-      <circle class="disc" cx="50" cy="50" r="${R+4}"/>
-      <circle class="track" cx="50" cy="50" r="${R}"/>
-      <circle class="bar" cx="50" cy="50" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>
-      <div class="icon"><svg viewBox="0 0 24 24">${G[it.icon]}</svg></div>
-    </div>
-    <div class="name">${it.name}</div>
-    ${it.g==='avond' ? `<div class="sub">${it.sub}</div>` : count}
+    <div class="ring">${ringSVG()}<div class="icon"><svg viewBox="0 0 24 24">${G[it.icon]}</svg></div>${n}
+      <span class="minus" data-minus="${it.id}" aria-label="één terug">−</span></div>
+    <div class="label">${pre}${it.name}${amt}</div>
   </button>`;
 }
 function renderAll(){
-  document.getElementById('dag').innerHTML=ITEMS.filter(i=>i.g==='dag').map(tileHTML).join('');
-  document.getElementById('avond').innerHTML=ITEMS.filter(i=>i.g==='avond').map(tileHTML).join('');
-  const d=new Date(); const ds=d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
-  document.getElementById('date').textContent=ds.charAt(0).toUpperCase()+ds.slice(1);
+  document.getElementById('p1').innerHTML=ITEMS.filter(i=>i.page===1).map(tileHTML).join('');
+  document.getElementById('p2').innerHTML=ITEMS.filter(i=>i.page===2).map(tileHTML).join('')+
+    `<div class="tile sum" id="total" data-frac="0/${GOALS.length}"><div class="ring">${ringSVG()}<div class="icon"><svg viewBox="0 0 24 24">${G.check}</svg></div><div class="n"><span id="totalNum">0</span>/${GOALS.length}</div></div><div class="label">Doelen vandaag</div></div>`+
+    `<button class="tile more" id="more"><div class="ring">${ringSVG()}<div class="icon"><svg viewBox="0 0 24 24">${G.more}</svg></div></div><div class="label">Meer</div></button>`;
   ITEMS.forEach(i=>update(i));
+  document.getElementById('more').addEventListener('click',()=>document.getElementById('sheet').classList.toggle('open'));
 }
 function update(it, pop){
   const n=state.counts[it.id]||0, el=document.getElementById('t-'+it.id);
   const frac=Math.min(n/it.target,1);
   el.querySelector('.bar').style.strokeDashoffset=(C*(1-frac)).toFixed(2);
-  const nEl=el.querySelector('.n'); if(nEl) nEl.textContent=n;
+  el.querySelector('.v').textContent=n;
   el.dataset.n=n;
   el.classList.toggle('done', n===it.target);
   el.classList.toggle('over', it.kind==='max' && n>it.target);
@@ -209,17 +175,13 @@ function update(it, pop){
   updateTotal();
 }
 function updateTotal(){
-  const goals=ITEMS.filter(i=>i.kind==='goal');
-  const done=goals.filter(i=>(state.counts[i.id]||0)>=i.target).length;
-  document.getElementById('totalNum').textContent=done; document.getElementById('total').dataset.frac=done+'/'+goals.length;
-  document.getElementById('totalBar').style.strokeDashoffset=(355.0*(1-done/goals.length)).toFixed(1);
-  document.getElementById('total').classList.toggle('all',done===goals.length);
-  document.getElementById('total').classList.toggle('zero',done===0);
-  const left=goals.length-done;
-  document.getElementById('sum').innerHTML = left===0 ? '<b>Alles gehaald</b> vandaag' : `Nog <b>${left} ${left===1?'doel':'doelen'}</b> te gaan`;
-  document.getElementById('dagLabel').classList.toggle('all', ITEMS.filter(i=>i.g==='dag'&&i.kind==='goal').every(i=>(state.counts[i.id]||0)>=i.target));
-  document.getElementById('avondLabel').classList.toggle('all', ITEMS.filter(i=>i.g==='avond').every(i=>(state.counts[i.id]||0)>=i.target));
-  document.title = left===0 ? 'Voedingscheck ✓' : 'Voedingscheck';
+  const done=GOALS.filter(i=>(state.counts[i.id]||0)>=i.target).length;
+  const t=document.getElementById('total');
+  document.getElementById('totalNum').textContent=done; t.dataset.frac=done+'/'+GOALS.length;
+  t.querySelector('.bar').style.strokeDashoffset=(C*(1-done/GOALS.length)).toFixed(2);
+  t.querySelector('.bar').style.opacity=done?1:0;
+  t.classList.toggle('done',done===GOALS.length);
+  document.title = done===GOALS.length ? 'Voedingscheck ✓' : 'Voedingscheck';
 }
 let recentT;
 function markRecent(el){
@@ -229,7 +191,7 @@ function markRecent(el){
 }
 function bump(id,delta){
   rollover();
-  const it=ITEMS.find(i=>i.id===id); const cur=state.counts[id]||0;
+  const it=ITEMS.find(i=>i.id===id); if(!it) return; const cur=state.counts[id]||0;
   let n=cur+delta; if(n<0)n=0;
   if(it.kind==='goal'&&n>it.target)n=it.target;
   if(it.kind==='max'&&n>it.target+1)n=it.target+1;
@@ -240,23 +202,23 @@ function bump(id,delta){
   if(it.kind==='max'&&n>it.target) toast(`${it.name}: boven het maximum van vandaag`);
   else if(it.kind==='goal'&&n===it.target&&delta>0) toast(`${it.name} gehaald`);
 }
-let tmr=null, held=false, tid=null;
+let tmr=null, held=false, tid=null, sx=0;
 document.body.addEventListener('pointerdown',e=>{
   if(e.target.closest('.minus')) return;
-  const t=e.target.closest('.tile'); if(!t) return; held=false; tid=t.dataset.id;
+  const t=e.target.closest('.tile[data-id]'); if(!t) return; held=false; tid=t.dataset.id; sx=e.clientX;
   tmr=setTimeout(()=>{held=true;bump(tid,-1)},500);
 });
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>document.body.addEventListener(ev,e=>{
   if(!tmr) return; clearTimeout(tmr); tmr=null;
-  const t=e.target.closest('.tile');
-  if(ev==='pointerup'&&t&&!held&&t.dataset.id===tid){
+  const t=e.target.closest('.tile[data-id]');
+  if(ev==='pointerup'&&t&&!held&&t.dataset.id===tid&&Math.abs(e.clientX-sx)<12){
     const it=ITEMS.find(i=>i.id===tid);
-    bump(tid, (it.g==='avond' && (state.counts[tid]||0)>=1) ? -1 : +1);
+    bump(tid, (it.target===1 && (state.counts[tid]||0)>=1) ? -1 : +1);
   }
 }));
 document.body.addEventListener('click',e=>{const m=e.target.closest('.minus'); if(m){e.stopPropagation();bump(m.dataset.minus,-1);}});
 document.body.addEventListener('contextmenu',e=>{if(e.target.closest('.tile'))e.preventDefault()});
-document.getElementById('more').addEventListener('click',()=>document.getElementById('sheet').classList.toggle('open'));
+document.getElementById('closeSheet').addEventListener('click',()=>document.getElementById('sheet').classList.remove('open'));
 let armed=false, armT;
 document.getElementById('reset').addEventListener('click',e=>{
   const b=e.currentTarget;
@@ -264,9 +226,11 @@ document.getElementById('reset').addEventListener('click',e=>{
   armed=false;b.textContent='Dag opnieuw beginnen';b.classList.remove('arm');state={date:todayKey(),counts:{}};save();renderAll();
   document.getElementById('sheet').classList.remove('open');toast('Dag opnieuw begonnen');
 });
+const pages=document.getElementById('pages'), dots=[...document.querySelectorAll('#dots i')];
+pages.addEventListener('scroll',()=>{const i=Math.round(pages.scrollLeft/pages.clientWidth);dots.forEach((d,k)=>d.classList.toggle('on',k===i));},{passive:true});
 let tt; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1500)}
 renderAll();
-try{ if(!localStorage.getItem(KEY+'.seen')){ setTimeout(()=>toast('Tik een tegel om af te vinken'),600); localStorage.setItem(KEY+'.seen','1'); } }catch(e){}
+try{ if(!localStorage.getItem(KEY+'.seen')){ setTimeout(()=>toast('Tik een ring om af te vinken · veeg voor de avondmaaltijd'),600); localStorage.setItem(KEY+'.seen','1'); } }catch(e){}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)rollover()});
 setInterval(rollover,60000);
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
