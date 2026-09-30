@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Voedingscheck</title>
+<meta name="description" content="Dagelijkse voedingscheck: vink af wat je vandaag hebt gegeten.">
+<meta name="theme-color" content="#0b0b10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Voedingscheck">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#0b0b10; --card:#16161e; --card-2:#1d1d27;
+  --text:#f5f5f7; --muted:#8b8b97; --faint:#55555f;
+  --track:#26262f; --ok:#34c759; --over:#ff453a; --ink:#0b0b10;
+  --r:20px; --gap:10px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+body{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 24px);
+  -webkit-user-select:none;user-select:none;touch-action:manipulation}
+
+/* header: the day is the headline */
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:4px 0 14px}
+.day .date{color:var(--muted);font-size:13px;font-weight:600;letter-spacing:.2px}
+.day h1{margin:2px 0 0;font-size:26px;font-weight:800;letter-spacing:-.5px;line-height:1.05}
+.day .sum{margin-top:6px;font-size:14px;color:var(--muted);font-weight:500}
+.day .sum b{color:var(--text);font-weight:700}
+.total{position:relative;width:88px;height:88px;flex:none}
+.total svg{width:88px;height:88px;transform:rotate(-90deg)}
+.total circle{fill:none;stroke-width:8;stroke-linecap:round}
+.total .tr{stroke:var(--track)} .total .tb{stroke:var(--ok);transition:stroke-dashoffset .5s cubic-bezier(.3,.9,.3,1)}
+.total .t-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1}
+.total .t-num span{font-weight:800;font-size:24px;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
+.total .t-num small{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:3px}
+.total.all .tb{stroke:var(--ok)} .total.all .t-num span{color:var(--ok)}
+
+h2{margin:14px 2px 8px;font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+
+/* tiles */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
+.tile{position:relative;background:var(--card);border-radius:var(--r);padding:12px 6px 11px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;
+  border:0;color:inherit;font:inherit;cursor:pointer;min-width:0;
+  transition:transform .12s cubic-bezier(.2,.8,.2,1),background .3s,color .3s;will-change:transform}
+.tile:active{transform:scale(.95)}
+.tile.pop{animation:pop .36s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.95)}55%{transform:scale(1.04)}100%{transform:scale(1)}}
+.ring{position:relative;width:66px;height:66px;margin-top:2px}
+.ring svg{width:66px;height:66px;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6;stroke-linecap:round}
+.ring .track{stroke:var(--track);transition:stroke .3s}
+.ring .bar{stroke:var(--c);transition:stroke-dashoffset .45s cubic-bezier(.3,.9,.3,1),stroke .3s}
+.ring .icon{position:absolute;inset:0;display:grid;place-items:center;font-size:28px;line-height:1;transition:transform .3s cubic-bezier(.2,.9,.3,1.4)}
+.name{font-size:12.5px;font-weight:700;letter-spacing:-.1px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.count{font-size:19px;font-weight:800;letter-spacing:-.6px;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:center;gap:2px}
+.count small{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:0;transition:color .3s}
+.count .lim{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin-left:3px}
+.badge{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;background:var(--ink);display:grid;place-items:center;
+  opacity:0;transform:scale(.3);transition:transform .35s cubic-bezier(.2,.9,.3,1.6),opacity .2s}
+.badge svg{width:12px;height:12px}
+/* done: the whole tile becomes the item's colour */
+.tile.done{background:var(--c);color:var(--ink)}
+.tile.done .ring .track{stroke:rgba(0,0,0,.18)} .tile.done .ring .bar{stroke:var(--ink)}
+.tile.done .count small,.tile.done .count .lim{color:rgba(0,0,0,.55)}
+.tile.done .badge{opacity:1;transform:scale(1)}
+.tile.done .icon{transform:scale(1.08)}
+/* max reached: quiet filled ring, no celebration */
+.tile.max.done{background:var(--card-2);color:var(--text)}
+.tile.max.done .ring .track{stroke:var(--track)} .tile.max.done .ring .bar{stroke:var(--c)}
+.tile.max.done .count small,.tile.max.done .count .lim{color:var(--muted)}
+.tile.max.done .badge{background:var(--c);color:var(--ink)!important}
+/* over the maximum: red, explicit */
+.tile.over{background:var(--over);color:#fff}
+.tile.over .ring .track{stroke:rgba(0,0,0,.2)} .tile.over .ring .bar{stroke:#fff}
+.tile.over .count small,.tile.over .count .lim{color:rgba(255,255,255,.8)}
+.tile.over .badge{opacity:1;transform:scale(1);background:#fff}
+.tile.over .count .lim{color:#fff;font-weight:800}
+.tile.over .badge{color:var(--over)!important}
+.tile.over .badge svg{display:none}
+.tile.over .badge::after{content:"!";font-weight:900;font-size:13px;line-height:1}
+.minus{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.07);color:var(--muted);
+  display:grid;place-items:center;font-size:16px;font-weight:700;line-height:1;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s;pointer-events:none}
+.tile[data-n]:not([data-n="0"]) .minus{opacity:1;transform:scale(1);pointer-events:auto}
+.tile.done .minus,.tile.over .minus{background:rgba(0,0,0,.18);color:inherit}
+.minus:active{transform:scale(.85)}
+
+/* dinner: one meal, four parts */
+.meal{grid-column:1/-1;background:var(--card);border-radius:var(--r);padding:12px 8px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;transition:background .3s,color .3s}
+.meal .tile{background:transparent;padding:6px 2px 4px;gap:6px;border-radius:14px}
+.meal .tile .ring,.meal .tile .ring svg{width:58px;height:58px}
+.meal .tile .ring circle{stroke-width:5}
+.meal .tile .icon{font-size:24px}
+.meal .tile .name{font-size:11.5px}
+.meal .tile .count{display:none}
+.meal .tile .badge{top:2px;right:6px;width:18px;height:18px}
+.meal .tile.done{background:var(--c);color:var(--ink)}
+.meal.all{background:var(--ok);color:var(--ink)}
+.meal.all .tile.done{background:transparent;color:var(--ink)}
+.meal.all .tile.done .badge{background:var(--ink)}
+.meal.all .tile .ring .bar{stroke:var(--ink)}
+.meal .tile .minus{display:none}
+.sub{font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.2;margin-top:-3px}
+.tile.done .sub{color:rgba(0,0,0,.6)}
+
+.hint{margin:22px 4px 0;text-align:center;color:var(--faint);font-size:12px;line-height:1.5}
+.hint b{color:var(--muted);font-weight:600}
+.reset{margin:10px auto 0;display:block;background:none;border:0;color:var(--muted);font:inherit;font-size:13.5px;font-weight:600;padding:10px 16px;border-radius:12px}
+.reset:active{background:var(--card)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%) translateY(20px);
+  background:var(--card-2);color:var(--text);padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-color-scheme: light){
+  :root{--bg:#f2f2f7;--card:#ffffff;--card-2:#ffffff;--text:#1c1c1e;--muted:#6e6e73;--faint:#9a9aa0;--track:#e6e6ec}
+  .minus{background:rgba(0,0,0,.05)}
+}
+@media (prefers-reduced-motion: reduce){.tile.pop{animation:none}.ring .bar,.icon,.badge{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="day">
+    <div class="date" id="date"></div>
+    <h1>Voedingscheck</h1>
+    <div class="sum" id="sum"></div>
+  </div>
+  <div class="total" id="total" aria-live="polite">
+    <svg viewBox="0 0 88 88"><circle class="tr" cx="44" cy="44" r="39"/><circle class="tb" id="totalBar" cx="44" cy="44" r="39" stroke-dasharray="245.04" stroke-dashoffset="245.04"/></svg>
+    <div class="t-num"><div><span id="totalNum">0/7</span><small>doelen</small></div></div>
+  </div>
+</header>
+
+<h2>Door de dag</h2>
+<div class="grid" id="dag"></div>
+<h2>Avondmaaltijd</h2>
+<div class="grid"><div class="meal" id="avond"></div></div>
+
+<p class="hint"><b>Tik</b> een tegel om af te vinken · <b>−</b> zet één terug<br>Morgen begint de lijst leeg.</p>
+<button class="reset" id="reset">Dag opnieuw beginnen</button>
+<div class="toast" id="toast"></div>
+
+<script>
+const ITEMS = [
+  {id:'volkoren', name:'Volkoren', target:8, unit:'eenheden', kind:'goal', c:'#f6a83b', icon:'🌾', g:'dag'},
+  {id:'zuivel',   name:'Zuivel',   target:4, unit:'× 200 ml', kind:'goal', c:'#5ac8fa', icon:'🥛', g:'dag'},
+  {id:'fruit',    name:'Fruit',    target:3, unit:'stuks', kind:'goal', c:'#ff6b6b', icon:'🍎', g:'dag'},
+  {id:'kaas',     name:'Kaas',     target:2, unit:'plakken', kind:'max', c:'#ffd60a', icon:'🧀', g:'dag'},
+  {id:'pindakaas',name:'Pindakaas',target:3, unit:'sneetjes', kind:'max', c:'#d39a5e', icon:'🥜', g:'dag'},
+  {id:'eiwit',    name:'Eiwitpoeder', target:2, unit:'scoops', kind:'max', c:'#c77dff', icon:'🥤', g:'dag'},
+  {id:'groenten', name:'Groenten', target:1, sub:'≥ 200 g', kind:'goal', c:'#30d158', icon:'🥦', g:'avond'},
+  {id:'graan',    name:'Granen',   target:1, sub:'75–100 g', kind:'goal', c:'#e8b86d', icon:'🍚', g:'avond'},
+  {id:'eiwitbron',name:'Eiwitbron', target:1, sub:'100–135 g', kind:'goal', c:'#ff9f0a', icon:'🫘', g:'avond'},
+  {id:'olijfolie',name:'Olijfolie', target:1, sub:'1 eetlepel', kind:'goal', c:'#b8e04a', icon:'🫒', g:'avond'},
+];
+const KEY='voedingscheck.v1';
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+let state=load();
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(s&&s.date===todayKey()&&s.counts) return s;}catch(e){}
+  return {date:todayKey(),counts:{}};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{}};save();renderAll();} }
+
+const R=32, C=2*Math.PI*R;
+const CHECK='<svg viewBox="0 0 12 12"><path d="M2.5 6.5l2.5 2.5 4.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function tileHTML(it){
+  const count = it.kind==='max'
+    ? `<div class="count"><span class="n">0</span><span class="lim">max ${it.target}</span></div>`
+    : `<div class="count"><span class="n">0</span><small>/${it.target}</small></div>`;
+  return `<button class="tile ${it.kind}" id="t-${it.id}" style="--c:${it.c}" data-id="${it.id}" data-n="0" aria-label="${it.name}">
+    <span class="minus" data-minus="${it.id}" aria-label="één terug">−</span>
+    <span class="badge" style="color:${it.c}">${CHECK}</span>
+    <div class="ring"><svg viewBox="0 0 70 70">
+      <circle class="track" cx="35" cy="35" r="${R}"/>
+      <circle class="bar" cx="35" cy="35" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>
+      <div class="icon">${it.icon}</div>
+    </div>
+    <div class="name">${it.name}</div>
+    ${it.g==='avond' ? `<div class="sub">${it.sub}</div>` : count}
+  </button>`;
+}
+function renderAll(){
+  document.getElementById('dag').innerHTML=ITEMS.filter(i=>i.g==='dag').map(tileHTML).join('');
+  document.getElementById('avond').innerHTML=ITEMS.filter(i=>i.g==='avond').map(tileHTML).join('');
+  const d=new Date(); const ds=d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('date').textContent=ds.charAt(0).toUpperCase()+ds.slice(1);
+  ITEMS.forEach(i=>update(i));
+}
+function update(it, pop){
+  const n=state.counts[it.id]||0, el=document.getElementById('t-'+it.id);
+  const frac=Math.min(n/it.target,1);
+  el.querySelector('.bar').style.strokeDashoffset=(C*(1-frac)).toFixed(2);
+  const nEl=el.querySelector('.n'); if(nEl) nEl.textContent=n;
+  const lim=el.querySelector('.lim'); if(lim) lim.textContent=(it.kind==='max'&&n>it.target)?'te veel':'max '+it.target;
+  el.dataset.n=n;
+  el.classList.toggle('done', n===it.target);
+  el.classList.toggle('over', it.kind==='max' && n>it.target);
+  if(pop){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
+  updateTotal();
+}
+function updateTotal(){
+  const goals=ITEMS.filter(i=>i.kind==='goal');
+  const done=goals.filter(i=>(state.counts[i.id]||0)>=i.target).length;
+  document.getElementById('totalNum').textContent=done+'/'+goals.length;
+  document.getElementById('totalBar').style.strokeDashoffset=(245.04*(1-done/goals.length)).toFixed(1);
+  document.getElementById('total').classList.toggle('all',done===goals.length);
+  const left=goals.length-done;
+  document.getElementById('sum').innerHTML = left===0 ? '<b>Alles gehaald</b> vandaag ✓' : `Nog <b>${left} ${left===1?'doel':'doelen'}</b> te gaan`;
+  const meal=document.getElementById('avond');
+  meal.classList.toggle('all', ITEMS.filter(i=>i.g==='avond').every(i=>(state.counts[i.id]||0)>=i.target));
+  document.title = left===0 ? 'Voedingscheck ✓' : 'Voedingscheck';
+}
+function bump(id,delta){
+  rollover();
+  const it=ITEMS.find(i=>i.id===id); const cur=state.counts[id]||0;
+  let n=cur+delta; if(n<0)n=0;
+  if(it.kind==='goal'&&n>it.target)n=it.target;
+  if(it.kind==='max'&&n>it.target+1)n=it.target+1;
+  if(n===cur){ if(delta>0) toast(it.kind==='goal'?`${it.name}: doel al gehaald ✓`:`${it.name}: maximum al bereikt`); return; }
+  state.counts[id]=n; save(); update(it,true);
+  if(navigator.vibrate) navigator.vibrate(n>=it.target?[10,30,10]:8);
+  if(it.kind==='max'&&n>it.target) toast(`${it.name}: boven het maximum van vandaag`);
+  else if(it.kind==='goal'&&n===it.target&&delta>0) toast(`${it.name} gehaald ✓`);
+}
+// tap = +1 (or toggle for single-step dinner items); the − chip = −1; long-press = −1 as a shortcut
+let tmr=null, held=false, tid=null;
+document.body.addEventListener('pointerdown',e=>{
+  if(e.target.closest('.minus')) return;
+  const t=e.target.closest('.tile'); if(!t) return; held=false; tid=t.dataset.id;
+  tmr=setTimeout(()=>{held=true;bump(tid,-1)},500);
+});
+['pointerup','pointercancel','pointerleave'].forEach(ev=>document.body.addEventListener(ev,e=>{
+  if(!tmr) return; clearTimeout(tmr); tmr=null;
+  const t=e.target.closest('.tile');
+  if(ev==='pointerup'&&t&&!held&&t.dataset.id===tid){
+    const it=ITEMS.find(i=>i.id===tid);
+    bump(tid, (it.g==='avond' && (state.counts[tid]||0)>=1) ? -1 : +1);
+  }
+}));
+document.body.addEventListener('click',e=>{const m=e.target.closest('.minus'); if(m){e.stopPropagation();bump(m.dataset.minus,-1);}});
+document.body.addEventListener('contextmenu',e=>{if(e.target.closest('.tile'))e.preventDefault()});
+let armed=false, armT;
+document.getElementById('reset').addEventListener('click',e=>{
+  const b=e.currentTarget;
+  if(!armed){armed=true;b.textContent='Tik nogmaals om alles van vandaag te wissen';clearTimeout(armT);armT=setTimeout(()=>{armed=false;b.textContent='Dag opnieuw beginnen'},2500);return;}
+  armed=false;b.textContent='Dag opnieuw beginnen';state={date:todayKey(),counts:{}};save();renderAll();toast('Dag opnieuw begonnen');
+});
+let tt; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1500)}
+renderAll();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)rollover()});
+setInterval(rollover,60000);
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
