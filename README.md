@@ -9,8 +9,12 @@ op basis van de "Dagelijkse voedingscheck".
 
 ## Gebruiken
 
-Open `app/index.html` via een statische server (bijv. GitHub Pages met `app/` als root) en
-voeg de pagina toe aan het beginscherm van je iPhone.
+De app staat op GitHub Pages: https://selweshype.github.io/food-checker/
+
+Eén keer instellen: Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+Daarna publiceert elke push van `app/` automatisch.
+
+Op je iPhone: open de link in Safari, Deel → Zet op beginscherm.
 
 ## Ontwikkelen
 
