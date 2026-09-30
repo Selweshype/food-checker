@@ -15,117 +15,122 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
 :root{
-  --bg:#0b0b10; --card:#16161e; --card-2:#1d1d27;
-  --text:#f5f5f7; --muted:#8b8b97; --faint:#55555f;
-  --track:#26262f; --ok:#34c759; --over:#ff453a; --ink:#0b0b10;
-  --r:20px; --gap:10px;
+  --bg:#0b0b10; --card:#15151c; --card-2:#1c1c25;
+  --text:#f5f5f7; --muted:#8b8b97; --faint:#5a5a66;
+  --track:#2c2c38; --ink:#0b0b10;
+  --goal:#3ddc73; --limit:#ffb340; --over:#ff4d3d;
+  --r:22px; --gap:10px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
-body{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 24px);
-  -webkit-user-select:none;user-select:none;touch-action:manipulation}
+body{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 20px);
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;display:flex;flex-direction:column}
+main{flex:1}
 
-/* header: the day is the headline */
-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:4px 0 14px}
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:6px 0 18px}
 .day .date{color:var(--muted);font-size:13px;font-weight:600;letter-spacing:.2px}
-.day h1{margin:2px 0 0;font-size:26px;font-weight:800;letter-spacing:-.5px;line-height:1.05}
-.day .sum{margin-top:6px;font-size:14px;color:var(--muted);font-weight:500}
+.day h1{margin:2px 0 0;font-size:28px;font-weight:800;letter-spacing:-.6px;line-height:1.05}
+.day .sum{margin-top:7px;font-size:14px;color:var(--muted);font-weight:500}
 .day .sum b{color:var(--text);font-weight:700}
-.total{position:relative;width:88px;height:88px;flex:none}
-.total svg{width:88px;height:88px;transform:rotate(-90deg)}
+.total{position:relative;width:92px;height:92px;flex:none}
+.total svg{width:92px;height:92px;transform:rotate(-90deg)}
 .total circle{fill:none;stroke-width:8;stroke-linecap:round}
-.total .tr{stroke:var(--track)} .total .tb{stroke:var(--ok);transition:stroke-dashoffset .5s cubic-bezier(.3,.9,.3,1)}
+.total .tr{stroke:var(--track)} .total .tb{stroke:var(--goal);transition:stroke-dashoffset .5s cubic-bezier(.3,.9,.3,1)}
 .total .t-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1}
-.total .t-num span{font-weight:800;font-size:24px;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
-.total .t-num small{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-top:3px}
-.total.all .tb{stroke:var(--ok)} .total.all .t-num span{color:var(--ok)}
+.total .t-num span{font-weight:800;font-size:25px;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
+.total .t-num small{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-top:4px}
+.total.all .t-num span{color:var(--goal)}
 
-h2{margin:14px 2px 8px;font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
+h2{margin:14px 2px 9px;font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
 
 /* tiles */
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
-.tile{position:relative;background:var(--card);border-radius:var(--r);padding:12px 6px 11px;
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;
-  border:0;color:inherit;font:inherit;cursor:pointer;min-width:0;
+.tile{position:relative;background:var(--card);border-radius:var(--r);padding:15px 6px 13px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;
+  border:0;color:var(--text);font:inherit;cursor:pointer;min-width:0;--c:var(--goal);
   transition:transform .12s cubic-bezier(.2,.8,.2,1),background .3s,color .3s;will-change:transform}
+.tile.max{--c:var(--limit)}
 .tile:active{transform:scale(.95)}
 .tile.pop{animation:pop .36s cubic-bezier(.2,.9,.3,1.4)}
 @keyframes pop{0%{transform:scale(.95)}55%{transform:scale(1.04)}100%{transform:scale(1)}}
-.ring{position:relative;width:66px;height:66px;margin-top:2px}
-.ring svg{width:66px;height:66px;transform:rotate(-90deg)}
+.ring{position:relative;width:74px;height:74px}
+.ring svg.r{position:absolute;inset:0;width:74px;height:74px;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:6;stroke-linecap:round}
 .ring .track{stroke:var(--track);transition:stroke .3s}
-.ring .bar{stroke:var(--c);transition:stroke-dashoffset .45s cubic-bezier(.3,.9,.3,1),stroke .3s}
-.ring .icon{position:absolute;inset:0;display:grid;place-items:center;font-size:28px;line-height:1;transition:transform .3s cubic-bezier(.2,.9,.3,1.4)}
-.name{font-size:12.5px;font-weight:700;letter-spacing:-.1px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.count{font-size:19px;font-weight:800;letter-spacing:-.6px;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:center;gap:2px}
+.ring .bar{stroke:var(--c);opacity:1;transition:stroke-dashoffset .45s cubic-bezier(.3,.9,.3,1),stroke .3s}
+.ring .icon{position:absolute;inset:0;display:grid;place-items:center;color:var(--c);transition:transform .3s cubic-bezier(.2,.9,.3,1.4),color .3s}
+.ring .icon svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.name{font-size:13px;font-weight:700;letter-spacing:-.1px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.count{font-size:19px;font-weight:800;letter-spacing:-.6px;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:center;gap:1px;margin-top:-3px}
 .count small{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:0;transition:color .3s}
-.count .lim{font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin-left:3px}
-.badge{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;background:var(--ink);display:grid;place-items:center;
+.count .lim{font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-left:4px;transition:color .3s}
+.badge{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--c);display:grid;place-items:center;
   opacity:0;transform:scale(.3);transition:transform .35s cubic-bezier(.2,.9,.3,1.6),opacity .2s}
-.badge svg{width:12px;height:12px}
-/* done: the whole tile becomes the item's colour */
+.badge svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tile[data-n="0"] .ring .bar{opacity:0}
+.total.zero .tb{opacity:0}
+/* done: the tile becomes the colour, the ring dissolves into it */
 .tile.done{background:var(--c);color:var(--ink)}
-.tile.done .ring .track{stroke:rgba(0,0,0,.18)} .tile.done .ring .bar{stroke:var(--ink)}
+.tile.done .ring .track{stroke:rgba(0,0,0,.14)} .tile.done .ring .bar{stroke:rgba(0,0,0,.14)}
+.tile.done .icon{color:var(--ink);transform:scale(1.12)}
 .tile.done .count small,.tile.done .count .lim{color:rgba(0,0,0,.55)}
 .tile.done .badge{opacity:1;transform:scale(1)}
-.tile.done .icon{transform:scale(1.08)}
-/* max reached: quiet filled ring, no celebration */
-.tile.max.done{background:var(--card-2);color:var(--text)}
-.tile.max.done .ring .track{stroke:var(--track)} .tile.max.done .ring .bar{stroke:var(--c)}
-.tile.max.done .count small,.tile.max.done .count .lim{color:var(--muted)}
-.tile.max.done .badge{background:var(--c);color:var(--ink)!important}
-/* over the maximum: red, explicit */
-.tile.over{background:var(--over);color:#fff}
-.tile.over .ring .track{stroke:rgba(0,0,0,.2)} .tile.over .ring .bar{stroke:#fff}
-.tile.over .count small,.tile.over .count .lim{color:rgba(255,255,255,.8)}
-.tile.over .badge{opacity:1;transform:scale(1);background:#fff}
-.tile.over .count .lim{color:#fff;font-weight:800}
-.tile.over .badge{color:var(--over)!important}
-.tile.over .badge svg{display:none}
-.tile.over .badge::after{content:"!";font-weight:900;font-size:13px;line-height:1}
-.minus{position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.07);color:var(--muted);
+/* over the maximum */
+.tile.over{--c:var(--over);background:var(--over);color:#fff}
+.tile.over .ring .track,.tile.over .ring .bar{stroke:rgba(0,0,0,.16)}
+.tile.over .icon{color:#fff;transform:scale(1.12)}
+.tile.over .count small,.tile.over .count .lim{color:rgba(255,255,255,.85)}
+.tile.over .badge{opacity:1;transform:scale(1);background:#fff;color:var(--over)}
+.tile.over .badge svg{display:none} .tile.over .badge::after{content:"!";font-weight:900;font-size:13px;line-height:1}
+/* undo chip: appears only on the tile you just tapped */
+.minus{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--muted);
   display:grid;place-items:center;font-size:16px;font-weight:700;line-height:1;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s;pointer-events:none}
-.tile[data-n]:not([data-n="0"]) .minus{opacity:1;transform:scale(1);pointer-events:auto}
-.tile.done .minus,.tile.over .minus{background:rgba(0,0,0,.18);color:inherit}
+.tile.recent .minus{opacity:1;transform:scale(1);pointer-events:auto}
+.tile.done .minus,.tile.over .minus{background:rgba(0,0,0,.16);color:inherit}
 .minus:active{transform:scale(.85)}
 
 /* dinner: one meal, four parts */
-.meal{grid-column:1/-1;background:var(--card);border-radius:var(--r);padding:12px 8px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;transition:background .3s,color .3s}
-.meal .tile{background:transparent;padding:6px 2px 4px;gap:6px;border-radius:14px}
-.meal .tile .ring,.meal .tile .ring svg{width:58px;height:58px}
+.meal{grid-column:1/-1;background:var(--card);border-radius:var(--r);padding:14px 8px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;transition:background .3s,color .3s;--c:var(--goal)}
+.meal .tile{background:transparent;padding:6px 2px 6px;gap:7px;border-radius:16px}
+.meal .tile .ring,.meal .tile .ring svg.r{width:60px;height:60px}
 .meal .tile .ring circle{stroke-width:5}
-.meal .tile .icon{font-size:24px}
-.meal .tile .name{font-size:11.5px}
+.meal .tile .icon svg{width:26px;height:26px}
+.meal .tile .name{font-size:12px}
 .meal .tile .count{display:none}
 .meal .tile .badge{top:2px;right:6px;width:18px;height:18px}
-.meal .tile.done{background:var(--c);color:var(--ink)}
-.meal.all{background:var(--ok);color:var(--ink)}
-.meal.all .tile.done{background:transparent;color:var(--ink)}
-.meal.all .tile.done .badge{background:var(--ink)}
-.meal.all .tile .ring .bar{stroke:var(--ink)}
 .meal .tile .minus{display:none}
-.sub{font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.2;margin-top:-3px}
+.sub{font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.2;margin-top:-4px;transition:color .3s}
 .tile.done .sub{color:rgba(0,0,0,.6)}
+.meal .tile.done{background:var(--c);color:var(--ink)}
+.meal.all{background:var(--goal);color:var(--ink)}
+.meal.all .tile.done{background:transparent}
 
-.hint{margin:22px 4px 0;text-align:center;color:var(--faint);font-size:12px;line-height:1.5}
-.hint b{color:var(--muted);font-weight:600}
-.reset{margin:10px auto 0;display:block;background:none;border:0;color:var(--muted);font:inherit;font-size:13.5px;font-weight:600;padding:10px 16px;border-radius:12px}
-.reset:active{background:var(--card)}
+/* quiet chrome */
+.more{margin:18px auto 0;width:36px;height:36px;border-radius:50%;border:0;background:var(--card);color:var(--muted);font:inherit;display:grid;place-items:center;cursor:pointer}
+.more svg{width:18px;height:18px;fill:currentColor}
+.sheet{display:none;margin:10px auto 0;max-width:340px;background:var(--card);border-radius:18px;padding:6px;text-align:center}
+.sheet.open{display:block}
+.sheet p{margin:8px 10px 10px;color:var(--muted);font-size:13px;line-height:1.5}
+.sheet p b{color:var(--text);font-weight:600}
+.sheet button{display:block;width:100%;background:var(--card-2);border:0;color:var(--text);font:inherit;font-size:15px;font-weight:600;padding:13px;border-radius:13px;cursor:pointer}
+.sheet button:active{opacity:.7}
+.sheet button.arm{color:var(--over)}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 18px);transform:translateX(-50%) translateY(20px);
   background:var(--card-2);color:var(--text);padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;
-  transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap}
+  transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (prefers-color-scheme: light){
-  :root{--bg:#f2f2f7;--card:#ffffff;--card-2:#ffffff;--text:#1c1c1e;--muted:#6e6e73;--faint:#9a9aa0;--track:#e6e6ec}
-  .minus{background:rgba(0,0,0,.05)}
+  :root{--bg:#f2f2f7;--card:#ffffff;--card-2:#f0f0f5;--text:#1c1c1e;--muted:#6e6e73;--faint:#9a9aa0;--track:#e3e3ea;--goal:#2fbf63;--limit:#f0a11f}
+  .minus{background:rgba(0,0,0,.06)}
 }
 @media (prefers-reduced-motion: reduce){.tile.pop{animation:none}.ring .bar,.icon,.badge{transition:none}}
 </style>
 </head>
 <body>
+<main>
 <header>
   <div class="day">
     <div class="date" id="date"></div>
@@ -133,7 +138,7 @@ h2{margin:14px 2px 8px;font-size:12px;font-weight:700;letter-spacing:.7px;text-t
     <div class="sum" id="sum"></div>
   </div>
   <div class="total" id="total" aria-live="polite">
-    <svg viewBox="0 0 88 88"><circle class="tr" cx="44" cy="44" r="39"/><circle class="tb" id="totalBar" cx="44" cy="44" r="39" stroke-dasharray="245.04" stroke-dashoffset="245.04"/></svg>
+    <svg viewBox="0 0 92 92"><circle class="tr" cx="46" cy="46" r="41"/><circle class="tb" id="totalBar" cx="46" cy="46" r="41" stroke-dasharray="257.61" stroke-dashoffset="257.61"/></svg>
     <div class="t-num"><div><span id="totalNum">0/7</span><small>doelen</small></div></div>
   </div>
 </header>
@@ -142,23 +147,39 @@ h2{margin:14px 2px 8px;font-size:12px;font-weight:700;letter-spacing:.7px;text-t
 <div class="grid" id="dag"></div>
 <h2>Avondmaaltijd</h2>
 <div class="grid"><div class="meal" id="avond"></div></div>
+</main>
 
-<p class="hint"><b>Tik</b> een tegel om af te vinken · <b>−</b> zet één terug<br>Morgen begint de lijst leeg.</p>
-<button class="reset" id="reset">Dag opnieuw beginnen</button>
+<button class="more" id="more" aria-label="Meer"><svg viewBox="0 0 18 18"><circle cx="4" cy="9" r="1.7"/><circle cx="9" cy="9" r="1.7"/><circle cx="14" cy="9" r="1.7"/></svg></button>
+<div class="sheet" id="sheet">
+  <p><b>Tik</b> een tegel om af te vinken. <b>Houd vast</b> of tik <b>−</b> om één terug te zetten.<br>Elke dag begint de lijst leeg.</p>
+  <button id="reset">Dag opnieuw beginnen</button>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
+const G = {
+  wheat:'<path d="M12 21V9"/><path d="M12 9c-3 0-4.5-2-4.5-4.5C10 4.5 12 6.5 12 9zM12 9c3 0 4.5-2 4.5-4.5C14 4.5 12 6.5 12 9z"/><path d="M12 14c-3 0-4.5-2-4.5-4.5C10 9.5 12 11.5 12 14zM12 14c3 0 4.5-2 4.5-4.5C14 9.5 12 11.5 12 14z"/><path d="M12 19c-3 0-4.5-2-4.5-4.5C10 14.5 12 16.5 12 19zM12 19c3 0 4.5-2 4.5-4.5C14 14.5 12 16.5 12 19z"/>',
+  milk:'<path d="M7.5 3.5h9l-1.1 16.2a1.5 1.5 0 01-1.5 1.3H10a1.5 1.5 0 01-1.5-1.3L7.5 3.5z"/><path d="M8.2 12.5h7.6"/>',
+  apple:'<path d="M12 8.2C10.2 6.6 6 6.6 6 11.5c0 3.8 2.6 8 4.8 8 .6 0 1.2-.5 1.2-.5s.6.5 1.2.5c2.2 0 4.8-4.2 4.8-8 0-4.9-4.2-4.9-6-3.3z"/><path d="M12 8V5"/><path d="M12 5c.6-1.4 2-2 3.6-1.8-.4 1.5-1.8 2.2-3.6 1.8z"/>',
+  cheese:'<path d="M2.5 17.5L21.5 8.5v9H2.5z"/><circle cx="16" cy="14" r="1.2"/><circle cx="10.5" cy="15.5" r=".9"/>',
+  peanut:'<path d="M6 8.5h12v9.5a2.5 2.5 0 01-2.5 2.5h-7A2.5 2.5 0 016 18V8.5z"/><path d="M7.5 8.5V5.5h9v3"/><path d="M6 12.5h12"/><path d="M9.5 16h5"/>',
+  shaker:'<path d="M8.5 7.5h7v11.5a1.8 1.8 0 01-1.8 1.8H10.3a1.8 1.8 0 01-1.8-1.8V7.5z"/><path d="M9.5 7.5V4.5a1 1 0 011-1h3a1 1 0 011 1v3"/><path d="M8.5 11h7M8.5 14h7"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/>',
+  broccoli:'<path d="M12 3.5a4.6 4.6 0 014.3 3A3.6 3.6 0 0118 13.5H6a3.6 3.6 0 011.7-7A4.6 4.6 0 0112 3.5z"/><path d="M10 13.5v5.5a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-5.5"/>',
+  rice:'<path d="M3 12.5h18a9 9 0 01-18 0z"/><path d="M6.2 12.5C7 9.7 9.3 7.8 12 7.8s5 1.9 5.8 4.7"/><path d="M9 7.5l9.5-4"/>',
+  bean:'<path d="M8.5 4C5 4 3.5 7.5 3.5 10.5S5.5 20 10.5 20c3.2 0 4.5-2.2 4.5-4.2 0-3.3-3.3-3-3.3-6.3C11.7 7.2 12.5 4 8.5 4z"/><path d="M13 5.5c3.4-1 7 1.5 7 5.5 0 2.5-1.2 4.5-3 5.5"/>',
+  olive:'<path d="M12 20.5c3.3 0 5.2-3 5.2-6.5S15.3 7.5 12 7.5 6.8 10.5 6.8 14s1.9 6.5 5.2 6.5z"/><path d="M12 7.5c0-2.3 1.7-4 4.5-4.2-.4 2.3-2.2 3.9-4.5 4.2z"/><path d="M9.8 11.5c-.7 1-1 2.3-.9 3.7"/>',
+};
 const ITEMS = [
-  {id:'volkoren', name:'Volkoren', target:8, unit:'eenheden', kind:'goal', c:'#f6a83b', icon:'🌾', g:'dag'},
-  {id:'zuivel',   name:'Zuivel',   target:4, unit:'× 200 ml', kind:'goal', c:'#5ac8fa', icon:'🥛', g:'dag'},
-  {id:'fruit',    name:'Fruit',    target:3, unit:'stuks', kind:'goal', c:'#ff6b6b', icon:'🍎', g:'dag'},
-  {id:'kaas',     name:'Kaas',     target:2, unit:'plakken', kind:'max', c:'#ffd60a', icon:'🧀', g:'dag'},
-  {id:'pindakaas',name:'Pindakaas',target:3, unit:'sneetjes', kind:'max', c:'#d39a5e', icon:'🥜', g:'dag'},
-  {id:'eiwit',    name:'Eiwitpoeder', target:2, unit:'scoops', kind:'max', c:'#c77dff', icon:'🥤', g:'dag'},
-  {id:'groenten', name:'Groenten', target:1, sub:'≥ 200 g', kind:'goal', c:'#30d158', icon:'🥦', g:'avond'},
-  {id:'graan',    name:'Granen',   target:1, sub:'75–100 g', kind:'goal', c:'#e8b86d', icon:'🍚', g:'avond'},
-  {id:'eiwitbron',name:'Eiwitbron', target:1, sub:'100–135 g', kind:'goal', c:'#ff9f0a', icon:'🫘', g:'avond'},
-  {id:'olijfolie',name:'Olijfolie', target:1, sub:'1 eetlepel', kind:'goal', c:'#b8e04a', icon:'🫒', g:'avond'},
+  {id:'volkoren', name:'Volkoren', target:8, kind:'goal', icon:'wheat', g:'dag'},
+  {id:'zuivel',   name:'Zuivel',   target:4, kind:'goal', icon:'milk', g:'dag'},
+  {id:'fruit',    name:'Fruit',    target:3, kind:'goal', icon:'apple', g:'dag'},
+  {id:'kaas',     name:'Kaas',     target:2, kind:'max',  icon:'cheese', g:'dag'},
+  {id:'pindakaas',name:'Pindakaas',target:3, kind:'max',  icon:'peanut', g:'dag'},
+  {id:'eiwit',    name:'Eiwitpoeder', target:2, kind:'max', icon:'shaker', g:'dag'},
+  {id:'groenten', name:'Groenten', target:1, sub:'≥ 200 g', kind:'goal', icon:'broccoli', g:'avond'},
+  {id:'graan',    name:'Granen',   target:1, sub:'75–100 g', kind:'goal', icon:'rice', g:'avond'},
+  {id:'eiwitbron',name:'Eiwitbron', target:1, sub:'100–135 g', kind:'goal', icon:'bean', g:'avond'},
+  {id:'olijfolie',name:'Olijfolie', target:1, sub:'1 eetlepel', kind:'goal', icon:'olive', g:'avond'},
 ];
 const KEY='voedingscheck.v1';
 const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -171,19 +192,19 @@ function load(){
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{}};save();renderAll();} }
 
-const R=32, C=2*Math.PI*R;
-const CHECK='<svg viewBox="0 0 12 12"><path d="M2.5 6.5l2.5 2.5 4.5-5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const R=34, C=2*Math.PI*R;
+const CHECK='<svg viewBox="0 0 12 12"><path d="M2.5 6.5l2.5 2.5 4.5-5.5"/></svg>';
 function tileHTML(it){
   const count = it.kind==='max'
-    ? `<div class="count"><span class="n">0</span><span class="lim">max ${it.target}</span></div>`
+    ? `<div class="count"><span class="n">0</span><small>/${it.target}</small><span class="lim">max</span></div>`
     : `<div class="count"><span class="n">0</span><small>/${it.target}</small></div>`;
-  return `<button class="tile ${it.kind}" id="t-${it.id}" style="--c:${it.c}" data-id="${it.id}" data-n="0" aria-label="${it.name}">
+  return `<button class="tile ${it.kind}" id="t-${it.id}" data-id="${it.id}" data-n="0" aria-label="${it.name}">
     <span class="minus" data-minus="${it.id}" aria-label="één terug">−</span>
-    <span class="badge" style="color:${it.c}">${CHECK}</span>
-    <div class="ring"><svg viewBox="0 0 70 70">
-      <circle class="track" cx="35" cy="35" r="${R}"/>
-      <circle class="bar" cx="35" cy="35" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>
-      <div class="icon">${it.icon}</div>
+    <span class="badge">${CHECK}</span>
+    <div class="ring"><svg class="r" viewBox="0 0 74 74">
+      <circle class="track" cx="37" cy="37" r="${R}"/>
+      <circle class="bar" cx="37" cy="37" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>
+      <div class="icon"><svg viewBox="0 0 24 24">${G[it.icon]}</svg></div>
     </div>
     <div class="name">${it.name}</div>
     ${it.g==='avond' ? `<div class="sub">${it.sub}</div>` : count}
@@ -201,7 +222,7 @@ function update(it, pop){
   const frac=Math.min(n/it.target,1);
   el.querySelector('.bar').style.strokeDashoffset=(C*(1-frac)).toFixed(2);
   const nEl=el.querySelector('.n'); if(nEl) nEl.textContent=n;
-  const lim=el.querySelector('.lim'); if(lim) lim.textContent=(it.kind==='max'&&n>it.target)?'te veel':'max '+it.target;
+  const lim=el.querySelector('.lim'); if(lim) lim.textContent=(n>it.target)?'te veel':'max';
   el.dataset.n=n;
   el.classList.toggle('done', n===it.target);
   el.classList.toggle('over', it.kind==='max' && n>it.target);
@@ -212,13 +233,19 @@ function updateTotal(){
   const goals=ITEMS.filter(i=>i.kind==='goal');
   const done=goals.filter(i=>(state.counts[i.id]||0)>=i.target).length;
   document.getElementById('totalNum').textContent=done+'/'+goals.length;
-  document.getElementById('totalBar').style.strokeDashoffset=(245.04*(1-done/goals.length)).toFixed(1);
+  document.getElementById('totalBar').style.strokeDashoffset=(257.61*(1-done/goals.length)).toFixed(1);
   document.getElementById('total').classList.toggle('all',done===goals.length);
+  document.getElementById('total').classList.toggle('zero',done===0);
   const left=goals.length-done;
-  document.getElementById('sum').innerHTML = left===0 ? '<b>Alles gehaald</b> vandaag ✓' : `Nog <b>${left} ${left===1?'doel':'doelen'}</b> te gaan`;
-  const meal=document.getElementById('avond');
-  meal.classList.toggle('all', ITEMS.filter(i=>i.g==='avond').every(i=>(state.counts[i.id]||0)>=i.target));
+  document.getElementById('sum').innerHTML = left===0 ? '<b>Alles gehaald</b> vandaag' : `Nog <b>${left} ${left===1?'doel':'doelen'}</b> te gaan`;
+  document.getElementById('avond').classList.toggle('all', ITEMS.filter(i=>i.g==='avond').every(i=>(state.counts[i.id]||0)>=i.target));
   document.title = left===0 ? 'Voedingscheck ✓' : 'Voedingscheck';
+}
+let recentT;
+function markRecent(el){
+  document.querySelectorAll('.tile.recent').forEach(t=>t.classList.remove('recent'));
+  if(!el || el.dataset.n==='0') return;
+  el.classList.add('recent'); clearTimeout(recentT); recentT=setTimeout(()=>el.classList.remove('recent'),3500);
 }
 function bump(id,delta){
   rollover();
@@ -226,13 +253,13 @@ function bump(id,delta){
   let n=cur+delta; if(n<0)n=0;
   if(it.kind==='goal'&&n>it.target)n=it.target;
   if(it.kind==='max'&&n>it.target+1)n=it.target+1;
-  if(n===cur){ if(delta>0) toast(it.kind==='goal'?`${it.name}: doel al gehaald ✓`:`${it.name}: maximum al bereikt`); return; }
-  state.counts[id]=n; save(); update(it,true);
+  const el=document.getElementById('t-'+id);
+  if(n===cur){ if(delta>0) toast(it.kind==='goal'?`${it.name}: doel al gehaald`:`${it.name}: maximum al bereikt`); markRecent(el); return; }
+  state.counts[id]=n; save(); update(it,true); markRecent(el);
   if(navigator.vibrate) navigator.vibrate(n>=it.target?[10,30,10]:8);
   if(it.kind==='max'&&n>it.target) toast(`${it.name}: boven het maximum van vandaag`);
-  else if(it.kind==='goal'&&n===it.target&&delta>0) toast(`${it.name} gehaald ✓`);
+  else if(it.kind==='goal'&&n===it.target&&delta>0) toast(`${it.name} gehaald`);
 }
-// tap = +1 (or toggle for single-step dinner items); the − chip = −1; long-press = −1 as a shortcut
 let tmr=null, held=false, tid=null;
 document.body.addEventListener('pointerdown',e=>{
   if(e.target.closest('.minus')) return;
@@ -249,14 +276,17 @@ document.body.addEventListener('pointerdown',e=>{
 }));
 document.body.addEventListener('click',e=>{const m=e.target.closest('.minus'); if(m){e.stopPropagation();bump(m.dataset.minus,-1);}});
 document.body.addEventListener('contextmenu',e=>{if(e.target.closest('.tile'))e.preventDefault()});
+document.getElementById('more').addEventListener('click',()=>document.getElementById('sheet').classList.toggle('open'));
 let armed=false, armT;
 document.getElementById('reset').addEventListener('click',e=>{
   const b=e.currentTarget;
-  if(!armed){armed=true;b.textContent='Tik nogmaals om alles van vandaag te wissen';clearTimeout(armT);armT=setTimeout(()=>{armed=false;b.textContent='Dag opnieuw beginnen'},2500);return;}
-  armed=false;b.textContent='Dag opnieuw beginnen';state={date:todayKey(),counts:{}};save();renderAll();toast('Dag opnieuw begonnen');
+  if(!armed){armed=true;b.textContent='Tik nogmaals om alles van vandaag te wissen';b.classList.add('arm');clearTimeout(armT);armT=setTimeout(()=>{armed=false;b.textContent='Dag opnieuw beginnen';b.classList.remove('arm')},2500);return;}
+  armed=false;b.textContent='Dag opnieuw beginnen';b.classList.remove('arm');state={date:todayKey(),counts:{}};save();renderAll();
+  document.getElementById('sheet').classList.remove('open');toast('Dag opnieuw begonnen');
 });
 let tt; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1500)}
 renderAll();
+try{ if(!localStorage.getItem(KEY+'.seen')){ setTimeout(()=>toast('Tik een tegel om af te vinken'),600); localStorage.setItem(KEY+'.seen','1'); } }catch(e){}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)rollover()});
 setInterval(rollover,60000);
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
