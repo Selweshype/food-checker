@@ -31,11 +31,11 @@ ok('goal caps at target', (await page.textContent('#t-fruit .n'))==='3');
 for(let i=0;i<5;i++) await page.tap('#t-kaas');
 ok('max shows over state at target+1', (await page.textContent('#t-kaas .n'))==='3' && await page.locator('#t-kaas.over').count()===1);
 // 5. total ring counts goals only
-ok('total counts goal items', (await page.textContent('#totalNum'))==='1/7');
+ok('total counts goal items', (await page.getAttribute('#total','data-frac'))==='1/7');
 // 6. daily reset: stored date != today -> empty
 await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('voedingscheck.v1'));s.date='2000-01-01';localStorage.setItem('voedingscheck.v1',JSON.stringify(s));});
 await page.reload(); await page.waitForTimeout(300);
-ok('new day resets list', (await page.textContent('#t-fruit .n'))==='0' && (await page.textContent('#totalNum'))==='0/7');
+ok('new day resets list', (await page.textContent('#t-fruit .n'))==='0' && (await page.getAttribute('#total','data-frac'))==='0/7');
 // 7. service worker registered and serves offline
 await page.waitForFunction(()=>navigator.serviceWorker.controller!==null || navigator.serviceWorker.getRegistrations().then(r=>r.length>0), null, {timeout:5000}).catch(()=>{});
 await page.waitForTimeout(800);
