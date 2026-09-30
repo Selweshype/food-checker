@@ -48,6 +48,7 @@ await ctx.setOffline(false); online=true;
 // 8. manifest + apple meta present
 const html=fs.readFileSync('app/index.html','utf8');
 ok('PWA meta present', /apple-mobile-web-app-capable/.test(html) && /rel="manifest"/.test(html) && /apple-touch-icon/.test(html));
+ok('every tile has a glyph', await page.evaluate(()=>[...document.querySelectorAll('.tile .icon svg')].every(sv=>sv.children.length>0)) && (await page.locator('.tile .icon svg').count())===10);
 ok('no horizontal scroll', await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
 for(const r of results) console.log(r.join('  '));
 await b.close(); srv.close();
