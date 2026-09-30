@@ -16,7 +16,7 @@
 <style>
 :root{
   --g1:#34b866; --g2:#17a3a4; --g3:#2b78d6;
-  --white:#fff; --track:rgba(255,255,255,.32); --ink:#101418; --over:#ff3b30;
+  --white:#fff; --track:rgba(255,255,255,.42); --ink:#101418; --over:#ff3b30;
   --ring:140px; --stroke:9;
   --cond:"Avenir Next Condensed","AvenirNextCondensed-Bold","Roboto Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
 }
@@ -74,7 +74,10 @@ body{display:flex;flex-direction:column;-webkit-user-select:none;user-select:non
 .tile.more .icon svg{margin-top:0;width:56px;height:56px}
 .tile.sum .icon svg{width:64px;height:64px}
 /* chrome */
-.dots{height:calc(env(safe-area-inset-bottom) + 34px);display:flex;justify-content:center;align-items:flex-start;gap:9px;padding-top:6px}
+.foot{height:calc(env(safe-area-inset-bottom) + 40px);display:grid;grid-template-columns:1fr auto 1fr;align-items:start;padding:8px 22px 0}
+.foot .date{font-family:var(--cond);font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:.4px;opacity:.85}
+.foot .mini{font-family:var(--cond);font-weight:700;font-size:15px;text-align:right;opacity:.85;font-variant-numeric:tabular-nums}
+.dots{display:flex;justify-content:center;align-items:center;gap:9px;padding-top:4px}
 .dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.45)} .dots i.on{background:var(--white)}
 .sheet{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 20px);background:rgba(255,255,255,.96);color:var(--ink);border-radius:22px;padding:8px;display:none;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 .sheet.open{display:block}
@@ -95,7 +98,7 @@ body{display:flex;flex-direction:column;-webkit-user-select:none;user-select:non
   <section class="page" id="p1"></section>
   <section class="page" id="p2"></section>
 </div>
-<div class="dots" id="dots"><i class="on"></i><i></i></div>
+<div class="foot"><div class="date" id="date"></div><div class="dots" id="dots"><i class="on"></i><i></i></div><div class="mini" id="mini">0/7 ♥</div></div>
 <div class="sheet" id="sheet">
   <p><b>Tik</b> een ring om af te vinken. <b>Houd vast</b> of tik <b>−</b> om één terug te zetten. Elke dag begint de lijst leeg.</p>
   <div class="key"><span>♥ doel</span><span>⊘ maximum</span><span style="color:var(--over)">● te veel</span></div>
@@ -178,6 +181,7 @@ function updateTotal(){
   const done=GOALS.filter(i=>(state.counts[i.id]||0)>=i.target).length;
   const t=document.getElementById('total');
   document.getElementById('totalNum').textContent=done; t.dataset.frac=done+'/'+GOALS.length;
+  document.getElementById('mini').textContent=done+'/'+GOALS.length+' ♥';
   t.querySelector('.bar').style.strokeDashoffset=(C*(1-done/GOALS.length)).toFixed(2);
   t.querySelector('.bar').style.opacity=done?1:0;
   t.classList.toggle('done',done===GOALS.length);
@@ -230,6 +234,7 @@ const pages=document.getElementById('pages'), dots=[...document.querySelectorAll
 pages.addEventListener('scroll',()=>{const i=Math.round(pages.scrollLeft/pages.clientWidth);dots.forEach((d,k)=>d.classList.toggle('on',k===i));},{passive:true});
 let tt; function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1500)}
 renderAll();
+{const d=new Date();document.getElementById('date').textContent=d.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'}).replace('.','');}
 try{ if(!localStorage.getItem(KEY+'.seen')){ setTimeout(()=>toast('Tik een ring om af te vinken · veeg voor de avondmaaltijd'),600); localStorage.setItem(KEY+'.seen','1'); } }catch(e){}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)rollover()});
 setInterval(rollover,60000);
