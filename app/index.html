@@ -17,7 +17,7 @@
 :root{
   --bg:#0b0b10; --card:#15151c; --card-2:#1c1c25;
   --text:#f5f5f7; --muted:#8b8b97; --faint:#5a5a66;
-  --track:#2c2c38; --ink:#0b0b10;
+  --ink:#0b0b10;
   --goal:#3ddc73; --limit:#ffb340; --over:#ff4d3d;
   --r:22px; --gap:10px;
 }
@@ -25,96 +25,100 @@
 html,body{margin:0;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,system-ui,sans-serif;
   -webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
-body{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 20px);
+body{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 16px);
   -webkit-user-select:none;user-select:none;touch-action:manipulation;display:flex;flex-direction:column}
 main{flex:1}
 
-/* header */
-header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:6px 0 18px}
+/* hero: the day itself */
+header{display:flex;flex-direction:column;align-items:center;text-align:center;padding:6px 0 10px;gap:8px}
 .day .date{color:var(--muted);font-size:13px;font-weight:600;letter-spacing:.2px}
-.day h1{margin:2px 0 0;font-size:28px;font-weight:800;letter-spacing:-.6px;line-height:1.05}
-.day .sum{margin-top:7px;font-size:14px;color:var(--muted);font-weight:500}
-.day .sum b{color:var(--text);font-weight:700}
-.total{position:relative;width:92px;height:92px;flex:none}
-.total svg{width:92px;height:92px;transform:rotate(-90deg)}
-.total circle{fill:none;stroke-width:8;stroke-linecap:round}
-.total .tr{stroke:var(--track)} .total .tb{stroke:var(--goal);transition:stroke-dashoffset .5s cubic-bezier(.3,.9,.3,1)}
-.total .t-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1}
-.total .t-num span{font-weight:800;font-size:25px;letter-spacing:-.8px;font-variant-numeric:tabular-nums}
-.total .t-num small{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-top:4px}
-.total.all .t-num span{color:var(--goal)}
-
-h2{margin:14px 2px 9px;font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted)}
-
-/* tiles */
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
-.tile{position:relative;background:var(--card);border-radius:var(--r);padding:15px 6px 13px;
-  display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;
-  border:0;color:var(--text);font:inherit;cursor:pointer;min-width:0;--c:var(--goal);
-  transition:transform .12s cubic-bezier(.2,.8,.2,1),background .3s,color .3s;will-change:transform}
-.tile.max{--c:var(--limit)}
-.tile:active{transform:scale(.95)}
-.tile.pop{animation:pop .36s cubic-bezier(.2,.9,.3,1.4)}
-@keyframes pop{0%{transform:scale(.95)}55%{transform:scale(1.04)}100%{transform:scale(1)}}
-.ring{position:relative;width:74px;height:74px}
-.ring svg.r{position:absolute;inset:0;width:74px;height:74px;transform:rotate(-90deg)}
-.ring circle{fill:none;stroke-width:6;stroke-linecap:round}
-.ring .track{stroke:var(--track);transition:stroke .3s}
-.ring .bar{stroke:var(--c);opacity:1;transition:stroke-dashoffset .45s cubic-bezier(.3,.9,.3,1),stroke .3s}
-.ring .icon{position:absolute;inset:0;display:grid;place-items:center;color:var(--c);transition:transform .3s cubic-bezier(.2,.9,.3,1.4),color .3s}
-.ring .icon svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.name{font-size:13px;font-weight:700;letter-spacing:-.1px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.count{font-size:19px;font-weight:800;letter-spacing:-.6px;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:center;gap:1px;margin-top:-3px}
-.count small{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:0;transition:color .3s}
-.count .lim{font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-left:4px;transition:color .3s}
-.badge{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--c);display:grid;place-items:center;
-  opacity:0;transform:scale(.3);transition:transform .35s cubic-bezier(.2,.9,.3,1.6),opacity .2s}
-.badge svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.tile[data-n="0"] .ring .bar{opacity:0}
+.day h1{margin:0;font-size:13px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--faint)}
+.total{position:relative;width:136px;height:136px}
+.total svg{width:136px;height:136px;transform:rotate(-90deg)}
+.total circle{fill:none;stroke-width:10;stroke-linecap:round}
+.total .tr{stroke:color-mix(in srgb,var(--goal) 22%,var(--bg))} .total .tb{stroke:var(--goal);transition:stroke-dashoffset .5s cubic-bezier(.3,.9,.3,1)}
 .total.zero .tb{opacity:0}
-/* done: the tile becomes the colour, the ring dissolves into it */
-.tile.done{background:var(--c);color:var(--ink)}
-.tile.done .ring .track{stroke:rgba(0,0,0,.14)} .tile.done .ring .bar{stroke:rgba(0,0,0,.14)}
-.tile.done .icon{color:var(--ink);transform:scale(1.12)}
-.tile.done .count small,.tile.done .count .lim{color:rgba(0,0,0,.55)}
+.total .t-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center;line-height:1}
+.total .t-num span{font-weight:800;font-size:40px;letter-spacing:-1.5px;font-variant-numeric:tabular-nums}
+.total .t-num small{display:block;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-top:6px}
+.total.all .t-num span{color:var(--goal)}
+.day .sum{font-size:15px;color:var(--muted);font-weight:500}
+.day .sum b{color:var(--text);font-weight:700}
+
+h2{margin:14px 2px 6px;font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--faint)}
+
+/* rings on the page, no cards */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
+.grid.four{grid-template-columns:repeat(4,1fr)}
+.tile{position:relative;background:transparent;border-radius:var(--r);padding:8px 2px 8px;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;
+  border:0;color:var(--text);font:inherit;cursor:pointer;min-width:0;--c:var(--goal);
+  transition:transform .12s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.tile.max{--c:var(--limit)}
+.tile:active{transform:scale(.94)}
+.tile.pop{animation:pop .36s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{0%{transform:scale(.94)}55%{transform:scale(1.05)}100%{transform:scale(1)}}
+.ring{position:relative;width:100px;height:100px}
+.ring svg.r{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:8;stroke-linecap:round}
+.ring .track{stroke:color-mix(in srgb,var(--c) 22%,var(--bg));transition:stroke .3s}
+.tile.max .ring .track{stroke-dasharray:.1 13.4}   /* dotted track = a ceiling, not a goal */
+.ring .bar{stroke:var(--c);opacity:1;transition:stroke-dashoffset .45s cubic-bezier(.3,.9,.3,1),stroke .3s,opacity .2s}
+.ring .disc{fill:var(--c);opacity:0;transform:scale(.6);transform-origin:center;transition:opacity .25s,transform .35s cubic-bezier(.2,.9,.3,1.4)}
+.ring .icon{position:absolute;inset:0;display:grid;place-items:center;color:var(--c);transition:transform .3s cubic-bezier(.2,.9,.3,1.4),color .3s}
+.ring .icon svg{width:44px;height:44px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tile[data-n="0"] .ring .bar{opacity:0}
+.count{font-size:21px;font-weight:800;letter-spacing:-.5px;line-height:1;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;justify-content:center;gap:1px}
+.count small{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0;transition:color .3s}
+.count .lim{display:none}
+.name{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:-.05px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:-3px}
+.badge{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:var(--c);color:var(--ink);box-shadow:0 0 0 3px var(--bg);display:grid;place-items:center;
+  opacity:0;transform:scale(.3);transition:transform .35s cubic-bezier(.2,.9,.3,1.6),opacity .2s}
+.badge svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+/* done: the ring becomes a solid disc, the glyph turns ink */
+.tile.done .ring .disc{opacity:1;transform:scale(1)}
+.tile.done .ring .track,.tile.done .ring .bar{opacity:0}
+.tile.done .icon{color:var(--ink);transform:scale(1.08)}
+.tile.done .count{color:var(--c)} .tile.done .count small{color:var(--c);opacity:.7}
 .tile.done .badge{opacity:1;transform:scale(1)}
-/* over the maximum */
-.tile.over{--c:var(--over);background:var(--over);color:#fff}
-.tile.over .ring .track,.tile.over .ring .bar{stroke:rgba(0,0,0,.16)}
-.tile.over .icon{color:#fff;transform:scale(1.12)}
-.tile.over .count small,.tile.over .count .lim{color:rgba(255,255,255,.85)}
-.tile.over .badge{opacity:1;transform:scale(1);background:#fff;color:var(--over)}
-.tile.over .badge svg{display:none} .tile.over .badge::after{content:"!";font-weight:900;font-size:13px;line-height:1}
+.tile.max.done .badge{opacity:0}                       /* a limit reached is not a win: disc, no check */
+/* over the maximum: red disc, red words */
+.tile.over{--c:var(--over)}
+.tile.over .ring .disc{opacity:1;transform:scale(1)}
+.tile.over .ring .track,.tile.over .ring .bar{opacity:0}
+.tile.over .icon{color:#fff;transform:scale(1.08)}
+.tile.over .count{color:var(--over)} .tile.over .count small{color:var(--over);opacity:.8}
+.tile.over .name{color:var(--over);font-weight:700}
+.tile.over .badge{opacity:1;transform:scale(1);background:var(--over);color:#fff}
+.tile.over .badge svg{display:none} .tile.over .badge::after{content:"!";font-weight:900;font-size:14px;line-height:1}
 /* undo chip: appears only on the tile you just tapped */
-.minus{position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--muted);
-  display:grid;place-items:center;font-size:16px;font-weight:700;line-height:1;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s;pointer-events:none}
+.minus{position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;background:var(--card-2);color:var(--text);box-shadow:0 0 0 3px var(--bg);
+  display:grid;place-items:center;font-size:17px;font-weight:700;line-height:1;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s;pointer-events:none}
 .tile.recent .minus{opacity:1;transform:scale(1);pointer-events:auto}
-.tile.done .minus,.tile.over .minus{background:rgba(0,0,0,.16);color:inherit}
 .minus:active{transform:scale(.85)}
 
-/* dinner: one meal, four parts */
-.meal{grid-column:1/-1;background:var(--card);border-radius:var(--r);padding:14px 8px 12px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;transition:background .3s,color .3s;--c:var(--goal)}
-.meal .tile{background:transparent;padding:6px 2px 6px;gap:7px;border-radius:16px}
-.meal .tile .ring,.meal .tile .ring svg.r{width:60px;height:60px}
-.meal .tile .ring circle{stroke-width:5}
-.meal .tile .icon svg{width:26px;height:26px}
-.meal .tile .name{font-size:12px}
-.meal .tile .count{display:none}
-.meal .tile .badge{top:2px;right:6px;width:18px;height:18px}
-.meal .tile .minus{display:none}
-.sub{font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.2;margin-top:-4px;transition:color .3s}
-.tile.done .sub{color:rgba(0,0,0,.6)}
-.meal .tile.done{background:var(--c);color:var(--ink)}
-.meal.all{background:var(--goal);color:var(--ink)}
-.meal.all .tile.done{background:transparent}
+/* dinner: four smaller rings, same language */
+.four .tile{padding:6px 0 4px;gap:6px}
+.four .tile .ring{width:78px;height:78px}
+.four .tile .ring circle{stroke-width:7}
+.four .tile .icon svg{width:34px;height:34px}
+.four .tile .count{display:none}
+.four .tile .name{font-size:12.5px;color:var(--text);margin-top:0}
+.four .tile .minus{display:none}
+.four .tile .badge{top:2px;right:2px}
+.sub{font-size:11.5px;color:var(--muted);font-weight:600;line-height:1.2;margin-top:-3px;transition:color .3s}
+.tile.done .sub{color:var(--c)}
+h2.all{color:var(--goal)}
 
 /* quiet chrome */
-.more{margin:18px auto 0;width:36px;height:36px;border-radius:50%;border:0;background:var(--card);color:var(--muted);font:inherit;display:grid;place-items:center;cursor:pointer}
+.more{margin:12px auto 0;width:36px;height:36px;border-radius:50%;border:0;background:var(--card);color:var(--muted);font:inherit;display:grid;place-items:center;cursor:pointer}
 .more svg{width:18px;height:18px;fill:currentColor}
 .sheet{display:none;margin:10px auto 0;max-width:340px;background:var(--card);border-radius:18px;padding:6px;text-align:center}
 .sheet.open{display:block}
 .sheet p{margin:8px 10px 10px;color:var(--muted);font-size:13px;line-height:1.5}
 .sheet p b{color:var(--text);font-weight:600}
+.sheet .key{display:flex;justify-content:center;gap:14px;margin:0 0 10px;font-size:12px;color:var(--muted);font-weight:600}
+.sheet .key i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 .sheet button{display:block;width:100%;background:var(--card-2);border:0;color:var(--text);font:inherit;font-size:15px;font-weight:600;padding:13px;border-radius:13px;cursor:pointer}
 .sheet button:active{opacity:.7}
 .sheet button.arm{color:var(--over)}
@@ -123,48 +127,45 @@ h2{margin:14px 2px 9px;font-size:12px;font-weight:700;letter-spacing:.7px;text-t
   transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);box-shadow:0 8px 30px rgba(0,0,0,.5);white-space:nowrap;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (prefers-color-scheme: light){
-  :root{--bg:#f2f2f7;--card:#ffffff;--card-2:#f0f0f5;--text:#1c1c1e;--muted:#6e6e73;--faint:#9a9aa0;--track:#e3e3ea;--goal:#2fbf63;--limit:#f0a11f}
-  .minus{background:rgba(0,0,0,.06)}
+  :root{--bg:#f2f2f7;--card:#ffffff;--card-2:#e9e9ef;--text:#1c1c1e;--muted:#6e6e73;--faint:#9a9aa0;--goal:#2fbf63;--limit:#f0a11f}
 }
-@media (prefers-reduced-motion: reduce){.tile.pop{animation:none}.ring .bar,.icon,.badge{transition:none}}
+@media (prefers-reduced-motion: reduce){.tile.pop{animation:none}.ring .bar,.icon,.badge,.disc{transition:none}}
 </style>
 </head>
 <body>
 <main>
 <header>
-  <div class="day">
-    <div class="date" id="date"></div>
-    <h1>Voedingscheck</h1>
-    <div class="sum" id="sum"></div>
-  </div>
+  <div class="day"><h1>Voedingscheck</h1><div class="date" id="date"></div></div>
   <div class="total" id="total" aria-live="polite">
-    <svg viewBox="0 0 92 92"><circle class="tr" cx="46" cy="46" r="41"/><circle class="tb" id="totalBar" cx="46" cy="46" r="41" stroke-dasharray="257.61" stroke-dashoffset="257.61"/></svg>
+    <svg viewBox="0 0 136 136"><circle class="tr" cx="68" cy="68" r="61"/><circle class="tb" id="totalBar" cx="68" cy="68" r="61" stroke-dasharray="383.27" stroke-dashoffset="383.27"/></svg>
     <div class="t-num"><div><span id="totalNum">0/7</span><small>doelen</small></div></div>
   </div>
+  <div class="day"><div class="sum" id="sum"></div></div>
 </header>
 
 <h2>Door de dag</h2>
 <div class="grid" id="dag"></div>
-<h2>Avondmaaltijd</h2>
-<div class="grid"><div class="meal" id="avond"></div></div>
+<h2 id="avondLabel">Avondmaaltijd</h2>
+<div class="grid four" id="avond"></div>
 </main>
 
 <button class="more" id="more" aria-label="Meer"><svg viewBox="0 0 18 18"><circle cx="4" cy="9" r="1.7"/><circle cx="9" cy="9" r="1.7"/><circle cx="14" cy="9" r="1.7"/></svg></button>
 <div class="sheet" id="sheet">
-  <p><b>Tik</b> een tegel om af te vinken. <b>Houd vast</b> of tik <b>−</b> om één terug te zetten.<br>Elke dag begint de lijst leeg.</p>
+  <p><b>Tik</b> een ring om af te vinken. <b>Houd vast</b> of tik <b>−</b> om één terug te zetten.<br>Elke dag begint de lijst leeg.</p>
+  <div class="key"><span><i style="background:var(--goal)"></i>doel</span><span><i style="background:var(--limit)"></i>maximum</span><span><i style="background:var(--over)"></i>te veel</span></div>
   <button id="reset">Dag opnieuw beginnen</button>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
 const G = {
-  wheat:'<path d="M12 21V9"/><path d="M12 9c-3 0-4.5-2-4.5-4.5C10 4.5 12 6.5 12 9zM12 9c3 0 4.5-2 4.5-4.5C14 4.5 12 6.5 12 9z"/><path d="M12 14c-3 0-4.5-2-4.5-4.5C10 9.5 12 11.5 12 14zM12 14c3 0 4.5-2 4.5-4.5C14 9.5 12 11.5 12 14z"/><path d="M12 19c-3 0-4.5-2-4.5-4.5C10 14.5 12 16.5 12 19zM12 19c3 0 4.5-2 4.5-4.5C14 14.5 12 16.5 12 19z"/>',
+  wheat:'<path d="M3.5 11a4 4 0 013.7-4A5 5 0 0112 4a5 5 0 014.8 3A4 4 0 0120.5 11c0 1.3-.6 2.4-1.5 3.2V19a2 2 0 01-2 2H7a2 2 0 01-2-2v-4.8C4.1 13.4 3.5 12.3 3.5 11z"/><path d="M7.5 20.5v-6.2A3.2 3.2 0 0110 11.2a2.3 2.3 0 012-2.4 2.3 2.3 0 012 2.4 3.2 3.2 0 012.5 3.1v6.2"/>',
   milk:'<path d="M7.5 3.5h9l-1.1 16.2a1.5 1.5 0 01-1.5 1.3H10a1.5 1.5 0 01-1.5-1.3L7.5 3.5z"/><path d="M8.2 12.5h7.6"/>',
   apple:'<path d="M12 8.2C10.2 6.6 6 6.6 6 11.5c0 3.8 2.6 8 4.8 8 .6 0 1.2-.5 1.2-.5s.6.5 1.2.5c2.2 0 4.8-4.2 4.8-8 0-4.9-4.2-4.9-6-3.3z"/><path d="M12 8V5"/><path d="M12 5c.6-1.4 2-2 3.6-1.8-.4 1.5-1.8 2.2-3.6 1.8z"/>',
-  cheese:'<path d="M2.5 17.5L21.5 8.5v9H2.5z"/><circle cx="16" cy="14" r="1.2"/><circle cx="10.5" cy="15.5" r=".9"/>',
-  peanut:'<path d="M6 8.5h12v9.5a2.5 2.5 0 01-2.5 2.5h-7A2.5 2.5 0 016 18V8.5z"/><path d="M7.5 8.5V5.5h9v3"/><path d="M6 12.5h12"/><path d="M9.5 16h5"/>',
-  shaker:'<path d="M8.5 7.5h7v11.5a1.8 1.8 0 01-1.8 1.8H10.3a1.8 1.8 0 01-1.8-1.8V7.5z"/><path d="M9.5 7.5V4.5a1 1 0 011-1h3a1 1 0 011 1v3"/><path d="M8.5 11h7M8.5 14h7"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/>',
-  broccoli:'<path d="M12 3.5a4.6 4.6 0 014.3 3A3.6 3.6 0 0118 13.5H6a3.6 3.6 0 011.7-7A4.6 4.6 0 0112 3.5z"/><path d="M10 13.5v5.5a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-5.5"/>',
+  cheese:'<path d="M2.5 19L21.5 5.5V19H2.5z"/><circle cx="13.5" cy="16" r="1.4"/><circle cx="18.2" cy="12.5" r="1"/><circle cx="8" cy="17.5" r=".8"/>',
+  peanut:'<path d="M5 10.5h14v8a2 2 0 01-2 2H7a2 2 0 01-2-2v-8z"/><path d="M6.5 10.5V8a1 1 0 011-1h9a1 1 0 011 1v2.5"/><path d="M14.5 7L19.5 2.5"/><path d="M19.5 2.5l1.3 1.3-2 2"/>',
+  shaker:'<path d="M7.5 9.5h9v10a1.5 1.5 0 01-1.5 1.5H9a1.5 1.5 0 01-1.5-1.5v-10z"/><path d="M7 9.5V7.5A1.5 1.5 0 018.5 6h7A1.5 1.5 0 0117 7.5v2"/><path d="M11 6V3.5h2V6"/><path d="M16.5 13h-2.5M16.5 16h-2.5"/>',
+  broccoli:'<path d="M6.5 12.5a3.3 3.3 0 01.6-6.4A4.2 4.2 0 0112 3a4.2 4.2 0 014.9 3.1 3.3 3.3 0 01.6 6.4H6.5z"/><path d="M9.5 12.5V9.5M14.5 12.5V9.5"/><path d="M10 12.5v6.5a1.5 1.5 0 001.5 1.5h1a1.5 1.5 0 001.5-1.5v-6.5"/>',
   rice:'<path d="M3 12.5h18a9 9 0 01-18 0z"/><path d="M6.2 12.5C7 9.7 9.3 7.8 12 7.8s5 1.9 5.8 4.7"/><path d="M9 7.5l9.5-4"/>',
   bean:'<path d="M8.5 4C5 4 3.5 7.5 3.5 10.5S5.5 20 10.5 20c3.2 0 4.5-2.2 4.5-4.2 0-3.3-3.3-3-3.3-6.3C11.7 7.2 12.5 4 8.5 4z"/><path d="M13 5.5c3.4-1 7 1.5 7 5.5 0 2.5-1.2 4.5-3 5.5"/>',
   olive:'<path d="M12 20.5c3.3 0 5.2-3 5.2-6.5S15.3 7.5 12 7.5 6.8 10.5 6.8 14s1.9 6.5 5.2 6.5z"/><path d="M12 7.5c0-2.3 1.7-4 4.5-4.2-.4 2.3-2.2 3.9-4.5 4.2z"/><path d="M9.8 11.5c-.7 1-1 2.3-.9 3.7"/>',
@@ -192,22 +193,24 @@ function load(){
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{}};save();renderAll();} }
 
-const R=34, C=2*Math.PI*R;
+const R=46, C=2*Math.PI*R;
 const CHECK='<svg viewBox="0 0 12 12"><path d="M2.5 6.5l2.5 2.5 4.5-5.5"/></svg>';
 function tileHTML(it){
   const count = it.kind==='max'
-    ? `<div class="count"><span class="n">0</span><small>/${it.target}</small><span class="lim">max</span></div>`
+    ? `<div class="count"><span class="n">0</span><small>/${it.target}</small></div>`
     : `<div class="count"><span class="n">0</span><small>/${it.target}</small></div>`;
   return `<button class="tile ${it.kind}" id="t-${it.id}" data-id="${it.id}" data-n="0" aria-label="${it.name}">
     <span class="minus" data-minus="${it.id}" aria-label="één terug">−</span>
     <span class="badge">${CHECK}</span>
-    <div class="ring"><svg class="r" viewBox="0 0 74 74">
-      <circle class="track" cx="37" cy="37" r="${R}"/>
-      <circle class="bar" cx="37" cy="37" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>
+    <div class="ring"><svg class="r" viewBox="0 0 100 100">
+      <circle class="disc" cx="50" cy="50" r="${R+4}"/>
+      <circle class="track" cx="50" cy="50" r="${R}"/>
+      <circle class="bar" cx="50" cy="50" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>
       <div class="icon"><svg viewBox="0 0 24 24">${G[it.icon]}</svg></div>
     </div>
+    ${it.g==='avond' ? '' : count}
     <div class="name">${it.name}</div>
-    ${it.g==='avond' ? `<div class="sub">${it.sub}</div>` : count}
+    ${it.g==='avond' ? `<div class="sub">${it.sub}</div>` : ''}
   </button>`;
 }
 function renderAll(){
@@ -233,12 +236,12 @@ function updateTotal(){
   const goals=ITEMS.filter(i=>i.kind==='goal');
   const done=goals.filter(i=>(state.counts[i.id]||0)>=i.target).length;
   document.getElementById('totalNum').textContent=done+'/'+goals.length;
-  document.getElementById('totalBar').style.strokeDashoffset=(257.61*(1-done/goals.length)).toFixed(1);
+  document.getElementById('totalBar').style.strokeDashoffset=(383.27*(1-done/goals.length)).toFixed(1);
   document.getElementById('total').classList.toggle('all',done===goals.length);
   document.getElementById('total').classList.toggle('zero',done===0);
   const left=goals.length-done;
   document.getElementById('sum').innerHTML = left===0 ? '<b>Alles gehaald</b> vandaag' : `Nog <b>${left} ${left===1?'doel':'doelen'}</b> te gaan`;
-  document.getElementById('avond').classList.toggle('all', ITEMS.filter(i=>i.g==='avond').every(i=>(state.counts[i.id]||0)>=i.target));
+  document.getElementById('avondLabel').classList.toggle('all', ITEMS.filter(i=>i.g==='avond').every(i=>(state.counts[i.id]||0)>=i.target));
   document.title = left===0 ? 'Voedingscheck ✓' : 'Voedingscheck';
 }
 let recentT;
