@@ -48,6 +48,24 @@ await ctx.setOffline(false); online=true;
 // 8. manifest + apple meta present
 const html=fs.readFileSync('app/index.html','utf8');
 ok('PWA meta present', /apple-mobile-web-app-capable/.test(html) && /rel="manifest"/.test(html) && /apple-touch-icon/.test(html));
+// feedback round 1
+await page.evaluate(()=>localStorage.removeItem('voedingscheck.v1')); await page.reload(); await page.waitForTimeout(300);
+await page.tap('#t-zuivel'); await page.waitForTimeout(80);
+ok('zuivel counts in 125 ml steps', (await page.textContent('#t-zuivel .v'))==='125');
+for(let i=0;i<4;i++) await page.tap('#t-zuivel');
+ok('zuivel done at 625 ml (goal 600)', (await page.textContent('#t-zuivel .v'))==='625' && await page.locator('#t-zuivel.done').count()===1);
+for(let i=0;i<3;i++) await page.tap('#t-zuivel');
+ok('zuivel capped at 750 ml (max 800)', (await page.textContent('#t-zuivel .v'))==='750');
+await page.click('#t-volkoren [data-help]'); await page.waitForTimeout(100);
+ok('volkoren help sheet opens with 35 g text', await page.locator('#info.open').count()===1 && /35 gram/.test(await page.textContent('#info p')));
+await page.click('#closeInfo');
+ok('volkoren count unchanged by help tap', (await page.textContent('#t-volkoren .v'))==='0');
+await page.evaluate(()=>{const p=document.getElementById('pages'); p.scrollTo({left:p.clientWidth,behavior:'instant'});}); await page.waitForTimeout(200);
+ok('granen defaults to ongekookt', (await page.textContent('#t-graan .amt'))==='75–100 g');
+await page.click('#t-graan [data-mode]'); await page.waitForTimeout(100);
+ok('granen toggles to gekookt', (await page.textContent('#t-graan .amt'))==='200–250 g');
+await page.reload(); await page.waitForTimeout(300);
+ok('granen mode survives reload', (await page.textContent('#t-graan .amt'))==='200–250 g');
 ok('every tile has a glyph', await page.evaluate(()=>[...document.querySelectorAll('.tile[data-id] .icon svg')].every(sv=>sv.children.length>0)) && (await page.locator('.tile[data-id] .icon svg').count())===10);
 ok('no page overflow', await page.evaluate(()=>document.documentElement.scrollHeight<=window.innerHeight+1));
 for(const r of results) console.log(r.join('  '));
