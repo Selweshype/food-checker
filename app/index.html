@@ -70,6 +70,13 @@ body{display:flex;flex-direction:column;-webkit-user-select:none;user-select:non
 .tile.recent .minus{opacity:1;transform:scale(1);pointer-events:auto}
 .sat{position:absolute;right:-6px;top:-4px;width:40px;height:40px;border-radius:50%;background:var(--white);color:var(--ink);display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.15);cursor:pointer}
 .sat svg{width:22px;height:22px;fill:currentColor}
+.sheet.picker h3{margin:10px 12px 2px;font-family:var(--cond);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.3px}
+.sheet.picker .now{margin:0 12px 10px;font-size:14px;color:#3a3f45} .sheet.picker .now b{color:var(--ink);font-size:16px}
+.sheet.picker .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 4px}
+.sheet.picker .opts button{margin:0;padding:14px 4px 12px;font-family:var(--cond);font-weight:700;font-size:22px;line-height:1;background:var(--g1);color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px}
+.sheet.picker .opts button small{font-size:12px;font-weight:600;opacity:.85}
+.sheet.picker .opts button:disabled{background:#e3e6ea;color:#9aa1a8}
+.sheet.picker .log{margin:10px 12px 4px;font-size:13px;color:#6b7279;font-variant-numeric:tabular-nums}
 .sheet.info h3{margin:10px 12px 2px;font-family:var(--cond);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.3px}
 /* summary + more slots */
 .tile.sum .ring .n{font-size:17px;bottom:15px}
@@ -89,10 +96,12 @@ body{display:flex;flex-direction:column;-webkit-user-select:none;user-select:non
 .sheet .key{display:flex;gap:16px;justify-content:center;margin:0 0 10px;font-size:13px;color:#3a3f45;font-weight:600}
 .sheet button{display:block;width:100%;background:#eef1f4;border:0;color:var(--ink);font:inherit;font-size:16px;font-weight:600;padding:14px;border-radius:14px;cursor:pointer;margin-top:6px}
 .sheet button.arm{color:var(--over)}
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 48px);transform:translateX(-50%) translateY(20px);
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 48px);z-index:5;transform:translateX(-50%) translateY(20px);
   background:rgba(16,20,24,.85);color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;
   transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);white-space:nowrap;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+body:has(.sheet.open) .toast{bottom:auto;top:calc(env(safe-area-inset-top) + 16px);transform:translateX(-50%) translateY(-20px)}
+body:has(.sheet.open) .toast.show{transform:translateX(-50%) translateY(0)}
 @media (prefers-reduced-motion: reduce){.tile.pop{animation:none}.ring .bar,.icon,.disc{transition:none}}
 </style>
 </head>
@@ -108,6 +117,7 @@ body{display:flex;flex-direction:column;-webkit-user-select:none;user-select:non
   <button id="reset">Dag opnieuw beginnen</button>
   <button id="closeSheet">Sluiten</button>
 </div>
+<div class="sheet picker" id="picker"><h3></h3><p class="now"></p><div class="opts"></div><p class="log"></p><button id="closePicker">Klaar</button></div>
 <div class="sheet info" id="info"><h3></h3><p></p><button id="closeInfo">Sluiten</button></div>
 <div class="toast" id="toast"></div>
 
@@ -128,7 +138,7 @@ G.check='<path d="M9.2 18.6 3.4 12.8l2.3-2.3 3.5 3.5 9.1-9.1 2.3 2.3z"/>';
 G.more='<circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/>';
 const ITEMS = [
   {id:'volkoren', name:'Volkoren', target:8, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram.'},
-  {id:'zuivel',   name:'Zuivel',   step:125, unit:'ml', goalAmt:600, capAmt:800, target:5, kind:'goal', icon:'milk', page:1, amt:'600–800 ml'},
+  {id:'zuivel',   name:'Zuivel',   portions:[125,250,300,500], unit:'ml', goalAmt:600, capAmt:800, target:1, kind:'goal', icon:'milk', page:1, amt:'600–800 ml'},
   {id:'fruit',    name:'Fruit',    target:3, kind:'goal', icon:'apple', page:1},
   {id:'kaas',     name:'Kaas',     target:2, kind:'max',  icon:'cheese', page:1},
   {id:'pindakaas',name:'Pindakaas',target:3, kind:'max',  icon:'peanut', page:1},
@@ -144,23 +154,30 @@ const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 let state=load();
 function load(){
   try{const s=JSON.parse(localStorage.getItem(KEY)||'null');
-    if(s&&s.date===todayKey()&&s.counts){ s.modes=s.modes||{}; return s; }}catch(e){}
-  return {date:todayKey(),counts:{},modes:{}};
+    if(s&&s.date===todayKey()&&s.counts){ s.modes=s.modes||{}; s.portions=s.portions||{}; return s; }}catch(e){}
+  return {date:todayKey(),counts:{},modes:{},portions:{}};
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
-function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{},modes:{}};save();renderAll();} }
+function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{},modes:{},portions:{}};save();renderAll();} }
 
 const R=45.5, C=2*Math.PI*R;
-const amount=(it,n)=> it.step ? n*it.step : n;
+const portionsOf=(it)=> state.portions[it.id]||[];
+const total=(it)=> portionsOf(it).reduce((a,b)=>a+b,0);
+const amount=(it,n)=> it.portions ? total(it) : it.step ? n*it.step : n;
+const isDone=(it,n)=> it.portions ? total(it)>=it.goalAmt : it.capAmt ? n>=it.target : n===it.target;
 const modeOf=(it)=> it.modes ? (state.modes[it.id]||'raw') : null;
-const amtLabel=(it)=> it.modes ? it.modes[modeOf(it)].amt : (it.amt||'');
+const amtLabel=(it)=>{
+  if(it.modes) return it.modes[modeOf(it)].amt;
+  if(it.portions){ const left=it.capAmt-total(it); return left>0 ? `nog ${left} ${it.unit} tot ${it.capAmt}` : `${it.capAmt} ${it.unit} · maximum`; }
+  return it.amt||'';
+};
 G.help='<path d="M12 2.5a9.5 9.5 0 100 19 9.5 9.5 0 000-19zm.1 15.3a1.4 1.4 0 110-2.8 1.4 1.4 0 010 2.8zm1.5-5.6c-.7.5-.9.8-.9 1.6h-2.2c0-1.6.6-2.3 1.6-3 .6-.4.9-.7.9-1.3 0-.7-.5-1.1-1.2-1.1-.8 0-1.3.5-1.4 1.3H8.2c.1-2 1.6-3.3 3.7-3.3 2.1 0 3.6 1.2 3.6 3 0 1.3-.7 2.1-1.9 2.8z"/>';
 G.swap='<path d="M7 7h9.2l-2.1-2.1L15.5 3.5 20 8l-4.5 4.5-1.4-1.4L16.2 9H7V7zm10 10H7.8l2.1 2.1-1.4 1.4L4 16l4.5-4.5 1.4 1.4L7.8 15H17v2z"/>';
 function ringSVG(){return `<svg class="r" viewBox="0 0 100 100"><circle class="disc" cx="50" cy="50" r="50"/><circle class="track" cx="50" cy="50" r="${R}"/><circle class="bar" cx="50" cy="50" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>`}
 function tileHTML(it){
   const pre = it.kind==='max' ? '<span class="pre">⊘</span>' : '<span class="pre">♥</span>';
   const amt = (it.amt||it.modes) ? `<span class="amt">${amtLabel(it)}</span>` : '';
-  const n = it.step ? `<div class="n"><span class="v">0</span> ${it.unit}</div>`
+  const n = (it.step||it.portions) ? `<div class="n"><span class="v">0</span> ${it.unit}</div>`
         : it.target>1 ? `<div class="n"><span class="v">0</span>/${it.target}</div>` : `<div class="n" hidden><span class="v">0</span></div>`;
   const sat = it.help ? `<span class="sat" data-help="${it.id}" aria-label="Uitleg"><svg viewBox="0 0 24 24">${G.help}</svg></span>`
             : it.modes ? `<span class="sat" data-mode="${it.id}" aria-label="Wissel gekookt/ongekookt"><svg viewBox="0 0 24 24">${G.swap}</svg></span>` : '';
@@ -180,18 +197,18 @@ function renderAll(){
 }
 function update(it, pop){
   const n=state.counts[it.id]||0, el=document.getElementById('t-'+it.id);
-  const frac=Math.min(n/it.target,1);
+  const frac=it.portions ? Math.min(total(it)/it.goalAmt,1) : Math.min(n/it.target,1);
   el.querySelector('.bar').style.strokeDashoffset=(C*(1-frac)).toFixed(2);
   el.querySelector('.v').textContent=amount(it,n);
   const a=el.querySelector('.amt'); if(a) a.textContent=amtLabel(it);
-  el.dataset.n=n;
-  el.classList.toggle('done', it.capAmt ? n>=it.target : n===it.target);
+  el.dataset.n=it.portions ? portionsOf(it).length : n;
+  el.classList.toggle('done', isDone(it,n));
   el.classList.toggle('over', it.kind==='max' && n>it.target);
   if(pop){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
   updateTotal();
 }
 function updateTotal(){
-  const done=GOALS.filter(i=>(state.counts[i.id]||0)>=i.target).length;
+  const done=GOALS.filter(i=>isDone(i,state.counts[i.id]||0)).length;
   const t=document.getElementById('total');
   document.getElementById('totalNum').textContent=done; t.dataset.frac=done+'/'+GOALS.length;
   document.getElementById('mini').textContent=done+'/'+GOALS.length+' ♥';
@@ -199,6 +216,29 @@ function updateTotal(){
   t.querySelector('.bar').style.opacity=done?1:0;
   t.classList.toggle('done',done===GOALS.length);
   document.title = done===GOALS.length ? 'Voedingscheck ✓' : 'Voedingscheck';
+}
+function addPortion(it,ml){
+  rollover();
+  const el=document.getElementById('t-'+it.id);
+  if(total(it)+ml>it.capAmt){ toast(`${it.name}: dat past niet meer, nog ${it.capAmt-total(it)} ${it.unit} tot ${it.capAmt}`); return; }
+  const was=isDone(it,0);
+  (state.portions[it.id]=portionsOf(it)).push(ml); save(); update(it,true); markRecent(el);
+  if(navigator.vibrate) navigator.vibrate(isDone(it,0)&&!was?[10,30,10]:8);
+  if(isDone(it,0)&&!was) toast(`${it.name}: ${it.goalAmt} ${it.unit} gehaald`);
+  renderPicker(it);
+}
+function removePortion(it){
+  const p=portionsOf(it); if(!p.length) return; const ml=p.pop(); save(); update(document.getElementById('t-'+it.id)&&it,true); markRecent(document.getElementById('t-'+it.id));
+  toast(`${it.name}: ${ml} ${it.unit} teruggezet`); if(document.getElementById('picker').classList.contains('open')) renderPicker(it);
+}
+function renderPicker(it){
+  const pk=document.getElementById('picker'); pk.dataset.id=it.id;
+  pk.querySelector('h3').textContent=it.name;
+  const t=total(it), left=it.capAmt-t;
+  pk.querySelector('.now').innerHTML=`<b>${t} ${it.unit}</b> vandaag · ${left>0?`nog ${left} ${it.unit} tot ${it.capAmt}`:'maximum bereikt'}`;
+  pk.querySelector('.opts').innerHTML=it.portions.map(ml=>`<button data-ml="${ml}" ${t+ml>it.capAmt?'disabled':''}>+${ml}<small>${it.unit}</small></button>`).join('');
+  const log=portionsOf(it); pk.querySelector('.log').textContent= log.length ? 'Vandaag: '+log.map(x=>x+' '+it.unit).join(' + ') : 'Nog niets toegevoegd';
+  pk.classList.add('open');
 }
 let recentT;
 function markRecent(el){
@@ -224,18 +264,21 @@ let tmr=null, held=false, tid=null, sx=0;
 document.body.addEventListener('pointerdown',e=>{
   if(e.target.closest('.minus,.sat')) return;
   const t=e.target.closest('.tile[data-id]'); if(!t) return; held=false; tid=t.dataset.id; sx=e.clientX;
-  tmr=setTimeout(()=>{held=true;bump(tid,-1)},500);
+  tmr=setTimeout(()=>{held=true;const it=ITEMS.find(i=>i.id===tid); it.portions?removePortion(it):bump(tid,-1)},500);
 });
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>document.body.addEventListener(ev,e=>{
   if(!tmr) return; clearTimeout(tmr); tmr=null;
   const t=e.target.closest('.tile[data-id]');
   if(ev==='pointerup'&&t&&!held&&t.dataset.id===tid&&Math.abs(e.clientX-sx)<12){
     const it=ITEMS.find(i=>i.id===tid);
+    if(it.portions){ renderPicker(it); return; }
     bump(tid, (it.target===1 && (state.counts[tid]||0)>=1) ? -1 : +1);
   }
 }));
 document.body.addEventListener('click',e=>{
-  const m=e.target.closest('.minus'); if(m){e.stopPropagation();bump(m.dataset.minus,-1);return;}
+  const m=e.target.closest('.minus'); if(m){e.stopPropagation();const it=ITEMS.find(i=>i.id===m.dataset.minus); it.portions?removePortion(it):bump(m.dataset.minus,-1);return;}
+  const pb=e.target.closest('#picker [data-ml]'); if(pb){const it=ITEMS.find(i=>i.id===document.getElementById('picker').dataset.id); addPortion(it,+pb.dataset.ml); return;}
+  if(e.target.closest('#closePicker')){document.getElementById('picker').classList.remove('open');return;}
   const h=e.target.closest('[data-help]'); if(h){e.stopPropagation();const it=ITEMS.find(i=>i.id===h.dataset.help);showInfo(it.name,it.help);return;}
   const w=e.target.closest('[data-mode]'); if(w){e.stopPropagation();const it=ITEMS.find(i=>i.id===w.dataset.mode);
     const next=modeOf(it)==='raw'?'cooked':'raw'; state.modes[it.id]=next; save(); update(it,true);
@@ -249,7 +292,7 @@ let armed=false, armT;
 document.getElementById('reset').addEventListener('click',e=>{
   const b=e.currentTarget;
   if(!armed){armed=true;b.textContent='Tik nogmaals om alles van vandaag te wissen';b.classList.add('arm');clearTimeout(armT);armT=setTimeout(()=>{armed=false;b.textContent='Dag opnieuw beginnen';b.classList.remove('arm')},2500);return;}
-  armed=false;b.textContent='Dag opnieuw beginnen';b.classList.remove('arm');state={date:todayKey(),counts:{},modes:{}};save();renderAll();
+  armed=false;b.textContent='Dag opnieuw beginnen';b.classList.remove('arm');state={date:todayKey(),counts:{},modes:{},portions:{}};save();renderAll();
   document.getElementById('sheet').classList.remove('open');toast('Dag opnieuw begonnen');
 });
 const pages=document.getElementById('pages'), dots=[...document.querySelectorAll('#dots i')];

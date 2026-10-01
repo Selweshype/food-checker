@@ -18,15 +18,15 @@ const ctx = await browser.newContext({viewport:{width:390,height:844},deviceScal
 const page = await ctx.newPage();
 const states = {
   empty: {},
-  partial: {volkoren:5,zuivel:3,fruit:3,kaas:1,pindakaas:3,eiwit:1,groenten:1},
-  done: {volkoren:8,zuivel:5,fruit:3,kaas:2,pindakaas:2,eiwit:1,groenten:1,graan:1,eiwitbron:1,olijfolie:1},
+  partial: {volkoren:5,zuivel:2,fruit:3,kaas:1,pindakaas:3,eiwit:1,groenten:1},
+  done: {volkoren:8,zuivel:3,fruit:3,kaas:2,pindakaas:2,eiwit:1,groenten:1,graan:1,eiwitbron:1,olijfolie:1},
   over: {volkoren:3,kaas:3,pindakaas:4,fruit:1},
 };
 const d=new Date(); const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 for (const [name,counts] of Object.entries(states)) {
   if(which!=='all'&&which!==name) continue;
   await page.goto(url);
-  await page.evaluate(([k,c])=>localStorage.setItem('voedingscheck.v1',JSON.stringify({date:k,counts:c})),[key,counts]);
+  await page.evaluate(([k,c])=>{const z=c.zuivel||0; const portions={zuivel:[300,250,250].slice(0,z)}; delete c.zuivel; localStorage.setItem('voedingscheck.v1',JSON.stringify({date:k,counts:c,portions}));},[key,counts]);
   await page.reload(); await page.waitForTimeout(700);
   await page.screenshot({path:path.join(out,`${name}.png`)});
   await page.evaluate(()=>{const p=document.getElementById('pages'); if(p) p.scrollTo({left:p.clientWidth,behavior:'instant'});}); await page.waitForTimeout(250);
