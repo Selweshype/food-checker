@@ -79,6 +79,22 @@ ok('volkoren 280 g fills the ring', (await page.textContent('#t-volkoren .v'))==
 await page.click('#otherBtn'); await page.fill('#otherInput','35'); await page.press('#otherInput','Enter'); await page.waitForTimeout(100);
 ok('volkoren 315 g shows "35 g te veel"', /35 g te veel/.test(await page.textContent('#t-volkoren .amt')) && await page.locator('#t-volkoren.over').count()===1);
 await page.click('#closePicker');
+// rounding to half slices (17,5 g)
+await page.evaluate(()=>localStorage.removeItem('voedingscheck.v1')); await page.reload(); await page.waitForTimeout(300);
+await page.tap('#t-volkoren'); await page.waitForTimeout(150); await page.click('#otherBtn');
+await page.fill('#otherInput','50'); await page.waitForTimeout(80);
+ok('typing 50 g previews 52,5 g and 1,5 sneetjes', /52,5 g/.test(await page.textContent('#otherHint')) && /1,5 sneetjes/.test(await page.textContent('#otherHint')));
+await page.press('#otherInput','Enter'); await page.waitForTimeout(100);
+ok('50 g is logged as 52,5 g', (await page.textContent('#t-volkoren .v'))==='52,5' && /nog 227,5 g tot 280/.test(await page.textContent('#t-volkoren .amt')));
+await page.click('#otherBtn'); await page.fill('#otherInput','40'); await page.press('#otherInput','Enter'); await page.waitForTimeout(100);
+ok('40 g rounds down to 35 g', (await page.textContent('#t-volkoren .v'))==='87,5');
+await page.click('#otherBtn'); await page.fill('#otherInput','5'); await page.press('#otherInput','Enter'); await page.waitForTimeout(100);
+ok('5 g is less than half a slice and adds nothing', (await page.textContent('#t-volkoren .v'))==='87,5');
+ok('sheet shows total in slices', /2,5 sneetjes/.test(await page.textContent('#picker .now')));
+await page.click('#closePicker');
+await page.tap('#t-zuivel'); await page.waitForTimeout(150); await page.click('#otherBtn'); await page.fill('#otherInput','183'); await page.press('#otherInput','Enter'); await page.waitForTimeout(100);
+ok('zuivel Anders stays exact (183 ml)', (await page.textContent('#t-zuivel .v'))==='183');
+await page.click('#closePicker');
 // migration: yesterday's app stored slices as a count
 await page.evaluate(k=>localStorage.setItem('voedingscheck.v1',JSON.stringify({date:k,counts:{volkoren:5},modes:{},portions:{}})),await page.evaluate(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}));
 await page.reload(); await page.waitForTimeout(300);

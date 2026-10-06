@@ -94,6 +94,8 @@ body{margin:0;height:100dvh;min-height:100%;color:var(--white);background:transp
 .sheet.picker .otherrow input{flex:1;min-width:0;font:700 22px var(--cond);padding:11px 12px;border-radius:12px;border:2px solid var(--g1);color:var(--ink);background:#fff;text-align:right;-webkit-user-select:text;user-select:text}
 .sheet.picker .otherrow .unit{font:700 18px var(--cond);color:#3a3f45;min-width:24px}
 .sheet.picker .otherrow button{width:auto;margin:0;padding:13px 16px;background:var(--g1);color:#fff;font-weight:700}
+.sheet.picker .hint{margin:6px 12px 0;min-height:18px;font-size:14px;font-weight:600;color:var(--g2)}
+.sheet.picker .hint:empty{display:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .sheet.picker .log{margin:10px 12px 4px;font-size:13px;color:#6b7279;font-variant-numeric:tabular-nums}
 .sheet.info h3{margin:10px 12px 2px;font-family:var(--cond);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.3px}
@@ -140,6 +142,7 @@ body:has(.sheet.open) .toast.show{transform:translateX(-50%) translateY(0)}
 <div class="sheet picker" id="picker"><h3></h3><p class="now"></p><div class="opts"></div>
   <button id="otherBtn" class="other">Anders…</button>
   <form id="otherForm" class="otherrow" hidden><label for="otherInput" class="sr">Eigen hoeveelheid</label><input id="otherInput" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" enterkeyhint="done"><span class="unit"></span><button type="submit">Toevoegen</button></form>
+  <p class="hint" id="otherHint" aria-live="polite"></p>
   <p class="log"></p><button id="closePicker">Klaar</button></div>
 <div class="sheet info" id="info"><h3></h3><p></p><button id="closeInfo">Sluiten</button></div>
 <div class="toast" id="toast"></div>
@@ -160,7 +163,7 @@ const G = {
 G.check='<path d="M9.2 18.6 3.4 12.8l2.3-2.3 3.5 3.5 9.1-9.1 2.3 2.3z"/>';
 G.more='<circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/>';
 const ITEMS = [
-  {id:'volkoren', name:'Volkoren', portions:[35,70,105], portionNotes:{35:'1 snee',70:'2 sneetjes',105:'3 sneetjes'}, unit:'g', goalAmt:280, capAmt:280, target:1, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram. Maximaal 8 × 35 = 280 gram per dag.'},
+  {id:'volkoren', name:'Volkoren', portions:[35,70,105], portionNotes:{35:'1 snee',70:'2 sneetjes',105:'3 sneetjes'}, slice:35, roundTo:17.5, unit:'g', goalAmt:280, capAmt:280, target:1, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram. Maximaal 8 × 35 = 280 gram per dag.'},
   {id:'zuivel',   name:'Zuivel',   portions:[125,250,300,500], unit:'ml', goalAmt:600, capAmt:800, target:1, kind:'goal', icon:'milk', page:1, amt:'600–800 ml'},
   {id:'fruit',    name:'Fruit',    target:3, kind:'goal', icon:'apple', page:1},
   {id:'kaas',     name:'Kaas',     target:2, kind:'max',  icon:'cheese', page:1},
@@ -186,6 +189,8 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{},modes:{},portions:{}};save();renderAll();} }
 
 const R=45.5, C=2*Math.PI*R;
+const fmt=(n)=> Number.isInteger(n) ? String(n) : (Math.round(n*10)/10).toFixed(1).replace('.',',');
+const slices=(it,g)=>{ const n=g/it.slice; return n===1 ? '1 snee' : `${fmt(n)} ${n<1?'snee':'sneetjes'}`; };
 const portionsOf=(it)=> state.portions[it.id]||[];
 const total=(it)=> portionsOf(it).reduce((a,b)=>a+b,0);
 const amount=(it,n)=> it.portions ? total(it) : it.step ? n*it.step : n;
@@ -194,7 +199,7 @@ const isDone=(it,n)=> it.portions ? (total(it)>=it.goalAmt && total(it)<=it.capA
 const modeOf=(it)=> it.modes ? (state.modes[it.id]||'raw') : null;
 const amtLabel=(it)=>{
   if(it.modes) return it.modes[modeOf(it)].amt;
-  if(it.portions){ const left=it.capAmt-total(it); return left>0 ? `nog ${left} ${it.unit} tot ${it.capAmt}` : left===0 ? `${it.capAmt} ${it.unit} · maximum` : `${-left} ${it.unit} te veel`; }
+  if(it.portions){ const left=it.capAmt-total(it); return left>0 ? `nog ${fmt(left)} ${it.unit} tot ${it.capAmt}` : left===0 ? `${it.capAmt} ${it.unit} · maximum` : `${fmt(-left)} ${it.unit} te veel`; }
   return it.amt||'';
 };
 G.help='<path d="M12 2.5a9.5 9.5 0 100 19 9.5 9.5 0 000-19zm.1 15.3a1.4 1.4 0 110-2.8 1.4 1.4 0 010 2.8zm1.5-5.6c-.7.5-.9.8-.9 1.6h-2.2c0-1.6.6-2.3 1.6-3 .6-.4.9-.7.9-1.3 0-.7-.5-1.1-1.2-1.1-.8 0-1.3.5-1.4 1.3H8.2c.1-2 1.6-3.3 3.7-3.3 2.1 0 3.6 1.2 3.6 3 0 1.3-.7 2.1-1.9 2.8z"/>';
@@ -225,7 +230,7 @@ function update(it, pop){
   const n=state.counts[it.id]||0, el=document.getElementById('t-'+it.id);
   const frac=it.portions ? Math.min(total(it)/it.goalAmt,1) : Math.min(n/it.target,1);
   el.querySelector('.bar').style.strokeDashoffset=(C*(1-frac)).toFixed(2);
-  el.querySelector('.v').textContent=amount(it,n);
+  el.querySelector('.v').textContent=fmt(amount(it,n));
   const a=el.querySelector('.amt'); if(a) a.textContent=amtLabel(it);
   el.dataset.n=it.portions ? portionsOf(it).length : n;
   el.classList.toggle('done', isDone(it,n));
@@ -249,22 +254,33 @@ function addPortion(it,ml){
   const was=isDone(it,0);
   (state.portions[it.id]=portionsOf(it)).push(ml); save(); update(it,true); markRecent(el);
   if(navigator.vibrate) navigator.vibrate(isOver(it,0)?[20,40,20]:isDone(it,0)&&!was?[10,30,10]:8);
-  if(isOver(it,0)) toast(`${it.name}: ${total(it)-it.capAmt} ${it.unit} te veel vandaag`);
+  if(isOver(it,0)) toast(`${it.name}: ${fmt(total(it)-it.capAmt)} ${it.unit} te veel vandaag`);
   else if(isDone(it,0)&&!was) toast(`${it.name}: ${it.goalAmt} ${it.unit} gehaald`);
   renderPicker(it);
 }
 function removePortion(it){
   const p=portionsOf(it); if(!p.length) return; const ml=p.pop(); save(); update(document.getElementById('t-'+it.id)&&it,true); markRecent(document.getElementById('t-'+it.id));
-  toast(`${it.name}: ${ml} ${it.unit} teruggezet`); if(document.getElementById('picker').classList.contains('open')) renderPicker(it);
+  toast(`${it.name}: ${fmt(ml)} ${it.unit} teruggezet`); if(document.getElementById('picker').classList.contains('open')) renderPicker(it);
 }
 function closePicker(){const pk=document.getElementById('picker'); pk.classList.remove('open'); document.getElementById('otherForm').hidden=true; document.getElementById('otherBtn').hidden=false; document.getElementById('otherInput').blur();}
+document.getElementById('otherInput').addEventListener('input',e=>{
+  const it=ITEMS.find(i=>i.id===document.getElementById('picker').dataset.id); const h=document.getElementById('otherHint');
+  const v=parseInt(String(e.target.value).replace(/[^0-9]/g,''),10);
+  if(!it||!it.roundTo||!v){ h.textContent=''; return; }
+  const add=Math.round(v/it.roundTo)*it.roundTo;
+  h.textContent = add===0 ? 'Minder dan een halve snee' : `Wordt ${fmt(add)} g · ${slices(it,add)}`;
+});
 document.getElementById('otherForm').addEventListener('submit',e=>{
   e.preventDefault();
   const it=ITEMS.find(i=>i.id===document.getElementById('picker').dataset.id); const inp=document.getElementById('otherInput');
   const v=parseInt(String(inp.value).replace(/[^0-9]/g,''),10);
   if(!v||v<1){ toast(`Vul een hoeveelheid in ${it.unit}`); inp.focus(); return; }
   if(v>2000){ toast(`Dat is meer dan 2000 ${it.unit}, klopt dat niet?`); inp.focus(); return; }
-  addPortion(it,v); inp.value=''; document.getElementById('otherForm').hidden=true; document.getElementById('otherBtn').hidden=false; inp.blur();
+  let add=v;
+  if(it.roundTo){ add=Math.round(v/it.roundTo)*it.roundTo;
+    if(add===0){ toast(`Minder dan een halve snee (${fmt(it.roundTo)} g), niet toegevoegd`); inp.focus(); return; } }
+  addPortion(it,add); document.getElementById('otherHint').textContent='';
+  if(add!==v) setTimeout(()=>toast(`${v} g afgerond naar ${fmt(add)} g (${slices(it,add)})`),50); inp.value=''; document.getElementById('otherForm').hidden=true; document.getElementById('otherBtn').hidden=false; inp.blur();
 });
 /* keep the sheet above the iPhone keyboard */
 if(window.visualViewport){ const vv=window.visualViewport; const kb=()=>document.documentElement.style.setProperty('--kb',Math.max(0,innerHeight-vv.height-vv.offsetTop)+'px'); vv.addEventListener('resize',kb); vv.addEventListener('scroll',kb); }
@@ -273,13 +289,13 @@ function renderPicker(it){
   pk.querySelector('h3').textContent=it.name;
   const t=total(it), left=it.capAmt-t;
   pk.classList.toggle('isover', left<0);
-  pk.querySelector('.now').innerHTML=`<b>${t} ${it.unit}</b> vandaag · ${left>0?`nog ${left} ${it.unit} tot ${it.capAmt}`:left===0?'maximum bereikt':`<span class="bad">${-left} ${it.unit} te veel</span>`}`;
+  pk.querySelector('.now').innerHTML=`<b>${fmt(t)} ${it.unit}</b>${it.slice?` (${slices(it,t)})`:''} vandaag · ${left>0?`nog ${fmt(left)} ${it.unit} tot ${it.capAmt}`:left===0?'maximum bereikt':`<span class="bad">${fmt(-left)} ${it.unit} te veel</span>`}`;
   pk.querySelector('.opts').style.gridTemplateColumns=`repeat(${it.portions.length},1fr)`;
   pk.querySelector('.opts').innerHTML=it.portions.map(ml=>{const note=(it.portionNotes&&it.portionNotes[ml])||it.unit; const warn=t+ml>it.capAmt;
     return `<button data-ml="${ml}" class="${warn?'warn':''}">+${ml}<small>${warn?'te veel':note}</small></button>`}).join('');
   pk.querySelector('.unit').textContent=it.unit;
   pk.querySelector('#otherInput').placeholder= it.unit==='ml' ? 'bijv. 180' : 'bijv. 50';
-  const log=portionsOf(it); pk.querySelector('.log').textContent= log.length ? 'Vandaag: '+log.map(x=>x+' '+it.unit).join(' + ') : 'Nog niets toegevoegd';
+  const log=portionsOf(it); pk.querySelector('.log').textContent= log.length ? 'Vandaag: '+log.map(x=>fmt(x)+' '+it.unit).join(' + ') : 'Nog niets toegevoegd';
   pk.classList.add('open');
 }
 let recentT;
@@ -321,7 +337,7 @@ document.body.addEventListener('click',e=>{
   const m=e.target.closest('.minus'); if(m){e.stopPropagation();const it=ITEMS.find(i=>i.id===m.dataset.minus); it.portions?removePortion(it):bump(m.dataset.minus,-1);return;}
   const pb=e.target.closest('#picker [data-ml]'); if(pb){const it=ITEMS.find(i=>i.id===document.getElementById('picker').dataset.id); addPortion(it,+pb.dataset.ml); return;}
   if(e.target.closest('#closePicker')){closePicker();return;}
-  if(e.target.closest('#otherBtn')){const f=document.getElementById('otherForm'); f.hidden=false; document.getElementById('otherBtn').hidden=true; const i=document.getElementById('otherInput'); i.value=''; i.focus(); return;}
+  if(e.target.closest('#otherBtn')){const f=document.getElementById('otherForm'); f.hidden=false; document.getElementById('otherBtn').hidden=true; const i=document.getElementById('otherInput'); i.value=''; document.getElementById('otherHint').textContent=''; i.focus(); return;}
   const h=e.target.closest('[data-help]'); if(h){e.stopPropagation();const it=ITEMS.find(i=>i.id===h.dataset.help);showInfo(it.name,it.help);return;}
   const w=e.target.closest('[data-mode]'); if(w){e.stopPropagation();const it=ITEMS.find(i=>i.id===w.dataset.mode);
     const next=modeOf(it)==='raw'?'cooked':'raw'; state.modes[it.id]=next; save(); update(it,true);
