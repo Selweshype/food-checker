@@ -47,6 +47,7 @@ ok('page loads offline via service worker', offlineOk);
 await ctx.setOffline(false); online=true;
 // 8. manifest + apple meta present
 const html=fs.readFileSync('app/index.html','utf8');
+ok('app version matches service worker cache', (()=>{const v=(fs.readFileSync('app/index.html','utf8').match(/const VERSION='(v\d+)'/)||[])[1]; return !!v && fs.readFileSync('app/sw.js','utf8').includes('voedingscheck-'+v);})());
 ok('PWA meta present', /apple-mobile-web-app-capable/.test(html) && /rel="manifest"/.test(html) && /apple-touch-icon/.test(html));
 // feedback round 1
 await page.evaluate(()=>localStorage.removeItem('voedingscheck.v1')); await page.reload(); await page.waitForTimeout(300);
@@ -115,6 +116,17 @@ await page.click('#t-eiwit [data-help]'); await page.waitForTimeout(100);
 ok('eiwitpoeder help sheet says 25–30 gram', await page.locator('#info.open').count()===1 && /25–30 gram/.test(await page.textContent('#info p')));
 await page.click('#closeInfo');
 ok('eiwitpoeder count unchanged by help tap', (await page.textContent('#t-eiwit .v'))==='0');
+// App vernieuwen keeps today's data and reloads with fresh files
+await page.evaluate(()=>{const p=document.getElementById('pages'); p.scrollTo({left:p.clientWidth,behavior:'instant'});}); await page.waitForTimeout(150);
+await page.tap('#t-fruit').catch(()=>{});
+await page.evaluate(()=>{const p=document.getElementById('pages'); p.scrollTo({left:p.clientWidth,behavior:'instant'});}); await page.waitForTimeout(150);
+await page.click('#more'); await page.waitForTimeout(80);
+ok('Meer menu has App vernieuwen and shows the version', await page.isVisible('#refresh') && /v\d+/.test(await page.textContent('#ver')));
+const before=await page.evaluate(()=>localStorage.getItem('voedingscheck.v1'));
+await page.evaluate(()=>{window.__stale=true});
+await Promise.all([page.waitForNavigation(), page.click('#refresh')]); await page.waitForTimeout(400);
+ok('App vernieuwen reloads the page', await page.evaluate(()=>window.__stale!==true));
+ok('App vernieuwen keeps today\'s data', (await page.evaluate(()=>localStorage.getItem('voedingscheck.v1')))===before);
 ok('every tile has a glyph', await page.evaluate(()=>[...document.querySelectorAll('.tile[data-id] .icon svg')].every(sv=>sv.children.length>0)) && (await page.locator('.tile[data-id] .icon svg').count())===10);
 ok('no page overflow', await page.evaluate(()=>document.documentElement.scrollHeight<=window.innerHeight+1));
 for(const r of results) console.log(r.join('  '));

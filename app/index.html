@@ -117,6 +117,9 @@ body{margin:0;height:100dvh;min-height:100%;color:var(--white);background:transp
 .sheet .key{display:flex;gap:16px;justify-content:center;margin:0 0 10px;font-size:13px;color:#3a3f45;font-weight:600}
 .sheet button{display:block;width:100%;background:#eef1f4;border:0;color:var(--ink);font:inherit;font-size:16px;font-weight:600;padding:14px;border-radius:14px;cursor:pointer;margin-top:6px}
 .sheet button.arm{color:var(--over)}
+.sheet button.refresh{background:var(--g1);color:#fff}
+.sheet button.refresh:disabled{opacity:.6}
+.sheet .ver{margin:10px 12px 4px;font-size:12px;color:#8a9097;text-align:center}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 48px);z-index:5;transform:translateX(-50%) translateY(20px);
   background:rgba(16,20,24,.85);color:#fff;padding:10px 16px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;
   transition:opacity .2s,transform .25s cubic-bezier(.2,.9,.3,1.2);white-space:nowrap;max-width:calc(100vw - 32px)}
@@ -136,8 +139,10 @@ body:has(.sheet.open) .toast.show{transform:translateX(-50%) translateY(0)}
 <div class="sheet" id="sheet">
   <p><b>Tik</b> een ring om af te vinken. <b>Houd vast</b> of tik <b>−</b> om één terug te zetten. Elke dag begint de lijst leeg.</p>
   <div class="key"><span>♥ doel</span><span>⊘ maximum</span><span style="color:var(--over)">● te veel</span></div>
+  <button id="refresh" class="refresh">↻ App vernieuwen</button>
   <button id="reset">Dag opnieuw beginnen</button>
   <button id="closeSheet">Sluiten</button>
+  <p class="ver">Versie <span id="ver"></span></p>
 </div>
 <div class="sheet picker" id="picker"><h3></h3><p class="now"></p><div class="opts"></div>
   <button id="otherBtn" class="other">Anders…</button>
@@ -348,6 +353,17 @@ document.getElementById('closeInfo').addEventListener('click',()=>document.getEl
 document.body.addEventListener('contextmenu',e=>{if(e.target.closest('.tile'))e.preventDefault()});
 document.getElementById('closeSheet').addEventListener('click',()=>document.getElementById('sheet').classList.remove('open'));
 let armed=false, armT;
+const VERSION='v19';
+document.getElementById('ver').textContent=VERSION;
+/* App vernieuwen: get the newest files from the internet and reload. Today's data stays in localStorage. */
+document.getElementById('refresh').addEventListener('click',async e=>{
+  const b=e.currentTarget; b.disabled=true; b.textContent='Bezig met vernieuwen…';
+  try{
+    if('serviceWorker' in navigator){ const regs=await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r=>r.update().catch(()=>{}))); await Promise.all(regs.map(r=>r.unregister())); }
+    if('caches' in window){ const keys=await caches.keys(); await Promise.all(keys.map(k=>caches.delete(k))); }
+  }catch(err){}
+  location.replace(location.pathname+'?v='+Date.now());
+});
 document.getElementById('reset').addEventListener('click',e=>{
   const b=e.currentTarget;
   if(!armed){armed=true;b.textContent='Tik nogmaals om alles van vandaag te wissen';b.classList.add('arm');clearTimeout(armT);armT=setTimeout(()=>{armed=false;b.textContent='Dag opnieuw beginnen';b.classList.remove('arm')},2500);return;}
