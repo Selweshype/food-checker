@@ -72,7 +72,8 @@ body{margin:0;height:100dvh;min-height:100%;color:var(--white);background:transp
 .tile.over .ring svg.r .disc{opacity:1;transform:scale(1);fill:var(--over)}
 .tile.over .ring .track,.tile.over .ring .bar{opacity:0}
 .tile.over .icon{color:var(--white)}
-.tile.over .label{color:#ffd2ce}
+.tile.over .label,.tile.over .label .amt{color:#ffd2ce}
+.tile.over .label .amt{opacity:1;font-weight:700}
 /* undo satellite, appears on the tile you just tapped */
 .minus{position:absolute;right:-6px;bottom:-4px;width:clamp(32px, calc(var(--ring) * .31), 44px);height:clamp(32px, calc(var(--ring) * .31), 44px);border-radius:50%;background:var(--white);color:var(--ink);
   display:grid;place-items:center;font-size:26px;font-weight:700;line-height:1;opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,.15)}
@@ -84,7 +85,16 @@ body{margin:0;height:100dvh;min-height:100%;color:var(--white);background:transp
 .sheet.picker .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 4px}
 .sheet.picker .opts button{margin:0;padding:14px 4px 12px;font-family:var(--cond);font-weight:700;font-size:22px;line-height:1;background:var(--g1);color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px}
 .sheet.picker .opts button small{font-size:12px;font-weight:600;opacity:.85}
-.sheet.picker .opts button:disabled{background:#e3e6ea;color:#9aa1a8}
+.sheet.picker .opts button.warn{background:#fff;color:var(--over);box-shadow:inset 0 0 0 2px var(--over)}
+.sheet.picker .now .bad{color:var(--over);font-weight:700}
+.sheet.picker .other{margin-top:8px;background:#eef1f4;color:var(--ink);font-family:var(--cond);font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.3px}
+.sheet.picker .otherrow{display:flex;align-items:center;gap:8px;margin:8px 4px 0}
+.sheet [hidden]{display:none!important}
+.sheet.picker .otherrow input:focus{outline:none;border-color:var(--g2);box-shadow:0 0 0 3px rgba(23,163,164,.25)}
+.sheet.picker .otherrow input{flex:1;min-width:0;font:700 22px var(--cond);padding:11px 12px;border-radius:12px;border:2px solid var(--g1);color:var(--ink);background:#fff;text-align:right;-webkit-user-select:text;user-select:text}
+.sheet.picker .otherrow .unit{font:700 18px var(--cond);color:#3a3f45;min-width:24px}
+.sheet.picker .otherrow button{width:auto;margin:0;padding:13px 16px;background:var(--g1);color:#fff;font-weight:700}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .sheet.picker .log{margin:10px 12px 4px;font-size:13px;color:#6b7279;font-variant-numeric:tabular-nums}
 .sheet.info h3{margin:10px 12px 2px;font-family:var(--cond);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.3px}
 /* summary + more slots */
@@ -98,7 +108,7 @@ body{margin:0;height:100dvh;min-height:100%;color:var(--white);background:transp
 .foot .mini{font-family:var(--cond);font-weight:700;font-size:15px;text-align:right;opacity:.85;font-variant-numeric:tabular-nums}
 .dots{display:flex;justify-content:center;align-items:center;gap:9px;padding-top:4px}
 .dots i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.45)} .dots i.on{background:var(--white)}
-.sheet{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 20px);background:rgba(255,255,255,.96);color:var(--ink);border-radius:22px;padding:8px;display:none;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.sheet{position:fixed;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom) + 20px + var(--kb,0px));transition:bottom .2s;background:rgba(255,255,255,.96);color:var(--ink);border-radius:22px;padding:8px;display:none;box-shadow:0 12px 40px rgba(0,0,0,.25)}
 .sheet.open{display:block}
 .sheet p{margin:10px 12px 12px;font-size:14px;line-height:1.5;color:#3a3f45}
 .sheet p b{color:var(--ink);font-weight:700}
@@ -127,7 +137,10 @@ body:has(.sheet.open) .toast.show{transform:translateX(-50%) translateY(0)}
   <button id="reset">Dag opnieuw beginnen</button>
   <button id="closeSheet">Sluiten</button>
 </div>
-<div class="sheet picker" id="picker"><h3></h3><p class="now"></p><div class="opts"></div><p class="log"></p><button id="closePicker">Klaar</button></div>
+<div class="sheet picker" id="picker"><h3></h3><p class="now"></p><div class="opts"></div>
+  <button id="otherBtn" class="other">Anders…</button>
+  <form id="otherForm" class="otherrow" hidden><label for="otherInput" class="sr">Eigen hoeveelheid</label><input id="otherInput" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" enterkeyhint="done"><span class="unit"></span><button type="submit">Toevoegen</button></form>
+  <p class="log"></p><button id="closePicker">Klaar</button></div>
 <div class="sheet info" id="info"><h3></h3><p></p><button id="closeInfo">Sluiten</button></div>
 <div class="toast" id="toast"></div>
 
@@ -147,7 +160,7 @@ const G = {
 G.check='<path d="M9.2 18.6 3.4 12.8l2.3-2.3 3.5 3.5 9.1-9.1 2.3 2.3z"/>';
 G.more='<circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/>';
 const ITEMS = [
-  {id:'volkoren', name:'Volkoren', target:8, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram.'},
+  {id:'volkoren', name:'Volkoren', portions:[35,70,105], portionNotes:{35:'1 snee',70:'2 sneetjes',105:'3 sneetjes'}, unit:'g', goalAmt:280, capAmt:280, target:1, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram. Maximaal 8 × 35 = 280 gram per dag.'},
   {id:'zuivel',   name:'Zuivel',   portions:[125,250,300,500], unit:'ml', goalAmt:600, capAmt:800, target:1, kind:'goal', icon:'milk', page:1, amt:'600–800 ml'},
   {id:'fruit',    name:'Fruit',    target:3, kind:'goal', icon:'apple', page:1},
   {id:'kaas',     name:'Kaas',     target:2, kind:'max',  icon:'cheese', page:1},
@@ -164,7 +177,9 @@ const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 let state=load();
 function load(){
   try{const s=JSON.parse(localStorage.getItem(KEY)||'null');
-    if(s&&s.date===todayKey()&&s.counts){ s.modes=s.modes||{}; s.portions=s.portions||{}; return s; }}catch(e){}
+    if(s&&s.date===todayKey()&&s.counts){ s.modes=s.modes||{}; s.portions=s.portions||{};
+      if(s.counts.volkoren && !s.portions.volkoren){ s.portions.volkoren=Array(s.counts.volkoren).fill(35); delete s.counts.volkoren; }
+      return s; }}catch(e){}
   return {date:todayKey(),counts:{},modes:{},portions:{}};
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
@@ -174,11 +189,12 @@ const R=45.5, C=2*Math.PI*R;
 const portionsOf=(it)=> state.portions[it.id]||[];
 const total=(it)=> portionsOf(it).reduce((a,b)=>a+b,0);
 const amount=(it,n)=> it.portions ? total(it) : it.step ? n*it.step : n;
-const isDone=(it,n)=> it.portions ? total(it)>=it.goalAmt : it.capAmt ? n>=it.target : n===it.target;
+const isOver=(it,n)=> it.portions ? total(it)>it.capAmt : (it.kind==='max' && n>it.target);
+const isDone=(it,n)=> it.portions ? (total(it)>=it.goalAmt && total(it)<=it.capAmt) : it.capAmt ? n>=it.target : n===it.target;
 const modeOf=(it)=> it.modes ? (state.modes[it.id]||'raw') : null;
 const amtLabel=(it)=>{
   if(it.modes) return it.modes[modeOf(it)].amt;
-  if(it.portions){ const left=it.capAmt-total(it); return left>0 ? `nog ${left} ${it.unit} tot ${it.capAmt}` : `${it.capAmt} ${it.unit} · maximum`; }
+  if(it.portions){ const left=it.capAmt-total(it); return left>0 ? `nog ${left} ${it.unit} tot ${it.capAmt}` : left===0 ? `${it.capAmt} ${it.unit} · maximum` : `${-left} ${it.unit} te veel`; }
   return it.amt||'';
 };
 G.help='<path d="M12 2.5a9.5 9.5 0 100 19 9.5 9.5 0 000-19zm.1 15.3a1.4 1.4 0 110-2.8 1.4 1.4 0 010 2.8zm1.5-5.6c-.7.5-.9.8-.9 1.6h-2.2c0-1.6.6-2.3 1.6-3 .6-.4.9-.7.9-1.3 0-.7-.5-1.1-1.2-1.1-.8 0-1.3.5-1.4 1.3H8.2c.1-2 1.6-3.3 3.7-3.3 2.1 0 3.6 1.2 3.6 3 0 1.3-.7 2.1-1.9 2.8z"/>';
@@ -186,7 +202,7 @@ G.swap='<path d="M7 7h9.2l-2.1-2.1L15.5 3.5 20 8l-4.5 4.5-1.4-1.4L16.2 9H7V7zm10
 function ringSVG(){return `<svg class="r" viewBox="0 0 100 100"><circle class="disc" cx="50" cy="50" r="50"/><circle class="track" cx="50" cy="50" r="${R}"/><circle class="bar" cx="50" cy="50" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>`}
 function tileHTML(it){
   const pre = it.kind==='max' ? '<span class="pre">⊘</span>' : '<span class="pre">♥</span>';
-  const amt = (it.amt||it.modes) ? `<span class="amt">${amtLabel(it)}</span>` : '';
+  const amt = (it.amt||it.modes||it.portions) ? `<span class="amt">${amtLabel(it)}</span>` : '';
   const n = (it.step||it.portions) ? `<div class="n"><span class="v">0</span> ${it.unit}</div>`
         : it.target>1 ? `<div class="n"><span class="v">0</span>/${it.target}</div>` : `<div class="n" hidden><span class="v">0</span></div>`;
   const sat = it.help ? `<span class="sat" data-help="${it.id}" aria-label="Uitleg"><svg viewBox="0 0 24 24">${G.help}</svg></span>`
@@ -213,7 +229,7 @@ function update(it, pop){
   const a=el.querySelector('.amt'); if(a) a.textContent=amtLabel(it);
   el.dataset.n=it.portions ? portionsOf(it).length : n;
   el.classList.toggle('done', isDone(it,n));
-  el.classList.toggle('over', it.kind==='max' && n>it.target);
+  el.classList.toggle('over', isOver(it,n));
   if(pop){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
   updateTotal();
 }
@@ -230,23 +246,39 @@ function updateTotal(){
 function addPortion(it,ml){
   rollover();
   const el=document.getElementById('t-'+it.id);
-  if(total(it)+ml>it.capAmt){ toast(`${it.name}: dat past niet meer, nog ${it.capAmt-total(it)} ${it.unit} tot ${it.capAmt}`); return; }
   const was=isDone(it,0);
   (state.portions[it.id]=portionsOf(it)).push(ml); save(); update(it,true); markRecent(el);
-  if(navigator.vibrate) navigator.vibrate(isDone(it,0)&&!was?[10,30,10]:8);
-  if(isDone(it,0)&&!was) toast(`${it.name}: ${it.goalAmt} ${it.unit} gehaald`);
+  if(navigator.vibrate) navigator.vibrate(isOver(it,0)?[20,40,20]:isDone(it,0)&&!was?[10,30,10]:8);
+  if(isOver(it,0)) toast(`${it.name}: ${total(it)-it.capAmt} ${it.unit} te veel vandaag`);
+  else if(isDone(it,0)&&!was) toast(`${it.name}: ${it.goalAmt} ${it.unit} gehaald`);
   renderPicker(it);
 }
 function removePortion(it){
   const p=portionsOf(it); if(!p.length) return; const ml=p.pop(); save(); update(document.getElementById('t-'+it.id)&&it,true); markRecent(document.getElementById('t-'+it.id));
   toast(`${it.name}: ${ml} ${it.unit} teruggezet`); if(document.getElementById('picker').classList.contains('open')) renderPicker(it);
 }
+function closePicker(){const pk=document.getElementById('picker'); pk.classList.remove('open'); document.getElementById('otherForm').hidden=true; document.getElementById('otherBtn').hidden=false; document.getElementById('otherInput').blur();}
+document.getElementById('otherForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const it=ITEMS.find(i=>i.id===document.getElementById('picker').dataset.id); const inp=document.getElementById('otherInput');
+  const v=parseInt(String(inp.value).replace(/[^0-9]/g,''),10);
+  if(!v||v<1){ toast(`Vul een hoeveelheid in ${it.unit}`); inp.focus(); return; }
+  if(v>2000){ toast(`Dat is meer dan 2000 ${it.unit}, klopt dat niet?`); inp.focus(); return; }
+  addPortion(it,v); inp.value=''; document.getElementById('otherForm').hidden=true; document.getElementById('otherBtn').hidden=false; inp.blur();
+});
+/* keep the sheet above the iPhone keyboard */
+if(window.visualViewport){ const vv=window.visualViewport; const kb=()=>document.documentElement.style.setProperty('--kb',Math.max(0,innerHeight-vv.height-vv.offsetTop)+'px'); vv.addEventListener('resize',kb); vv.addEventListener('scroll',kb); }
 function renderPicker(it){
   const pk=document.getElementById('picker'); pk.dataset.id=it.id;
   pk.querySelector('h3').textContent=it.name;
   const t=total(it), left=it.capAmt-t;
-  pk.querySelector('.now').innerHTML=`<b>${t} ${it.unit}</b> vandaag · ${left>0?`nog ${left} ${it.unit} tot ${it.capAmt}`:'maximum bereikt'}`;
-  pk.querySelector('.opts').innerHTML=it.portions.map(ml=>`<button data-ml="${ml}" ${t+ml>it.capAmt?'disabled':''}>+${ml}<small>${it.unit}</small></button>`).join('');
+  pk.classList.toggle('isover', left<0);
+  pk.querySelector('.now').innerHTML=`<b>${t} ${it.unit}</b> vandaag · ${left>0?`nog ${left} ${it.unit} tot ${it.capAmt}`:left===0?'maximum bereikt':`<span class="bad">${-left} ${it.unit} te veel</span>`}`;
+  pk.querySelector('.opts').style.gridTemplateColumns=`repeat(${it.portions.length},1fr)`;
+  pk.querySelector('.opts').innerHTML=it.portions.map(ml=>{const note=(it.portionNotes&&it.portionNotes[ml])||it.unit; const warn=t+ml>it.capAmt;
+    return `<button data-ml="${ml}" class="${warn?'warn':''}">+${ml}<small>${warn?'te veel':note}</small></button>`}).join('');
+  pk.querySelector('.unit').textContent=it.unit;
+  pk.querySelector('#otherInput').placeholder= it.unit==='ml' ? 'bijv. 180' : 'bijv. 50';
   const log=portionsOf(it); pk.querySelector('.log').textContent= log.length ? 'Vandaag: '+log.map(x=>x+' '+it.unit).join(' + ') : 'Nog niets toegevoegd';
   pk.classList.add('open');
 }
@@ -288,7 +320,8 @@ document.body.addEventListener('pointerdown',e=>{
 document.body.addEventListener('click',e=>{
   const m=e.target.closest('.minus'); if(m){e.stopPropagation();const it=ITEMS.find(i=>i.id===m.dataset.minus); it.portions?removePortion(it):bump(m.dataset.minus,-1);return;}
   const pb=e.target.closest('#picker [data-ml]'); if(pb){const it=ITEMS.find(i=>i.id===document.getElementById('picker').dataset.id); addPortion(it,+pb.dataset.ml); return;}
-  if(e.target.closest('#closePicker')){document.getElementById('picker').classList.remove('open');return;}
+  if(e.target.closest('#closePicker')){closePicker();return;}
+  if(e.target.closest('#otherBtn')){const f=document.getElementById('otherForm'); f.hidden=false; document.getElementById('otherBtn').hidden=true; const i=document.getElementById('otherInput'); i.value=''; i.focus(); return;}
   const h=e.target.closest('[data-help]'); if(h){e.stopPropagation();const it=ITEMS.find(i=>i.id===h.dataset.help);showInfo(it.name,it.help);return;}
   const w=e.target.closest('[data-mode]'); if(w){e.stopPropagation();const it=ITEMS.find(i=>i.id===w.dataset.mode);
     const next=modeOf(it)==='raw'?'cooked':'raw'; state.modes[it.id]=next; save(); update(it,true);
