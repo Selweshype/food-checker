@@ -22,15 +22,18 @@
   --top:clamp(8px, 3.2dvh, 34px);
   --foot:calc(40px + env(safe-area-inset-bottom));
   --ringW:calc((100vw - 24px) / 2 - 38px);
-  --ringH:calc((100dvh - env(safe-area-inset-top) - var(--top) - 12px - var(--foot)) / 3 - 62px);
+  --ringH:calc((var(--appH, 100dvh) - env(safe-area-inset-top) - var(--top) - 12px - var(--foot)) / 3 - 62px);
   --ring:clamp(72px, min(var(--ringW), var(--ringH)), 156px);
   --cond:"Avenir Next Condensed","AvenirNextCondensed-Bold","Roboto Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{margin:0;min-height:100%;background-color:var(--g1)}
-.backdrop{position:fixed;left:0;right:0;top:0;height:100lvh;z-index:-1;pointer-events:none;
-  background:linear-gradient(180deg,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%)}
-body{margin:0;height:100dvh;min-height:100%;color:var(--white);background:transparent;
+/* the gradient follows the measured screen height; the blue shadow fills anything below it,
+   because a home-screen app on iPhone can report 100vh shorter than the screen */
+.backdrop{position:fixed;left:0;right:0;top:0;height:max(100lvh, var(--appH, 0px));z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,var(--g1) 0%,var(--g2) 55%,var(--g3) 100%);
+  box-shadow:0 400px 0 0 var(--g3)}
+body{margin:0;height:var(--appH, 100dvh);min-height:100%;color:var(--white);background:transparent;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
   -webkit-font-smoothing:antialiased;overscroll-behavior:none;
   display:flex;flex-direction:column;-webkit-user-select:none;user-select:none;touch-action:manipulation;overflow:hidden}
@@ -130,6 +133,7 @@ body:has(.sheet.open) .toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
+<script>document.documentElement.style.setProperty('--appH',innerHeight+'px')</script>
 <div class="backdrop" aria-hidden="true"></div>
 <div class="pages" id="pages">
   <section class="page" id="p1"></section>
@@ -168,7 +172,7 @@ const G = {
 G.check='<path d="M9.2 18.6 3.4 12.8l2.3-2.3 3.5 3.5 9.1-9.1 2.3 2.3z"/>';
 G.more='<circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/>';
 const ITEMS = [
-  {id:'volkoren', name:'Volkoren', portions:[35,70,105], portionNotes:{35:'1 snee',70:'2 sneetjes',105:'3 sneetjes'}, slice:35, roundTo:17.5, unit:'g', goalAmt:280, capAmt:280, target:1, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram. Maximaal 8 × 35 = 280 gram per dag.'},
+  {id:'volkoren', name:'Volkoren', portions:[35,70,105,140], portionNotes:{35:'1 snee',70:'2 sneetjes',105:'3 sneetjes',140:'4 sneetjes'}, slice:35, roundTo:17.5, unit:'g', goalAmt:280, capAmt:280, target:1, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram. Maximaal 8 × 35 = 280 gram per dag.'},
   {id:'zuivel',   name:'Zuivel',   portions:[125,250,300,500], unit:'ml', goalAmt:600, capAmt:800, target:1, kind:'goal', icon:'milk', page:1, amt:'600–800 ml'},
   {id:'fruit',    name:'Fruit',    target:3, kind:'goal', icon:'apple', page:1},
   {id:'kaas',     name:'Kaas',     target:2, kind:'max',  icon:'cheese', page:1},
@@ -353,7 +357,15 @@ document.getElementById('closeInfo').addEventListener('click',()=>document.getEl
 document.body.addEventListener('contextmenu',e=>{if(e.target.closest('.tile'))e.preventDefault()});
 document.getElementById('closeSheet').addEventListener('click',()=>document.getElementById('sheet').classList.remove('open'));
 let armed=false, armT;
-const VERSION='v19';
+const VERSION='v20';
+function setAppH(){
+  const typing=document.activeElement&&document.activeElement.tagName==='INPUT';
+  const h=window.innerHeight, w=window.innerWidth, root=document.documentElement;
+  if(typing && root.dataset.w==String(w) && h<+(root.dataset.h||0)) return;
+  root.dataset.w=w; root.dataset.h=h; root.style.setProperty('--appH', h+'px');
+}
+setAppH(); addEventListener('resize',setAppH); addEventListener('orientationchange',()=>setTimeout(setAppH,250));
+addEventListener('pageshow',setAppH);
 document.getElementById('ver').textContent=VERSION;
 /* App vernieuwen: get the newest files from the internet and reload. Today's data stays in localStorage. */
 document.getElementById('refresh').addEventListener('click',async e=>{

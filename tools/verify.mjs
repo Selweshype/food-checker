@@ -74,7 +74,10 @@ await page.reload(); await page.waitForTimeout(300);
 ok('portions survive reload', (await page.textContent('#t-zuivel .v'))==='730');
 // volkoren in grams
 await page.tap('#t-volkoren'); await page.waitForTimeout(150);
-ok('volkoren picker shows 35/70/105 with slice counts', (await page.locator('#picker [data-ml]').count())===3 && /1 snee/.test(await page.textContent('#picker [data-ml="35"]')) && /2 sneetjes/.test(await page.textContent('#picker [data-ml="70"]')) && /3 sneetjes/.test(await page.textContent('#picker [data-ml="105"]')));
+ok('volkoren picker shows 35/70/105/140 with slice counts', (await page.locator('#picker [data-ml]').count())===4 && /1 snee/.test(await page.textContent('#picker [data-ml="35"]')) && /2 sneetjes/.test(await page.textContent('#picker [data-ml="70"]')) && /3 sneetjes/.test(await page.textContent('#picker [data-ml="105"]')) && /4 sneetjes/.test(await page.textContent('#picker [data-ml="140"]')));
+await page.click('#picker [data-ml="140"]'); await page.waitForTimeout(80);
+ok('+140 adds 4 sneetjes at once', (await page.textContent('#t-volkoren .v'))==='140');
+await page.click('#closePicker'); await page.click('#t-volkoren .minus'); await page.waitForTimeout(80); await page.tap('#t-volkoren'); await page.waitForTimeout(120);
 await page.click('#picker [data-ml="105"]'); await page.click('#picker [data-ml="105"]'); await page.click('#picker [data-ml="70"]'); await page.waitForTimeout(100);
 ok('volkoren 280 g fills the ring', (await page.textContent('#t-volkoren .v'))==='280' && await page.locator('#t-volkoren.done').count()===1);
 await page.click('#otherBtn'); await page.fill('#otherInput','35'); await page.press('#otherInput','Enter'); await page.waitForTimeout(100);
