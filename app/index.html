@@ -88,6 +88,10 @@ body{margin:0;height:var(--appH, 100dvh);min-height:100%;color:var(--white);back
 .sheet.picker .opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 4px}
 .sheet.picker .opts button{margin:0;padding:14px 4px 12px;font-family:var(--cond);font-weight:700;font-size:22px;line-height:1;background:var(--g1);color:#fff;display:flex;flex-direction:column;align-items:center;gap:4px}
 .sheet.picker .opts button small{font-size:12px;font-weight:600;opacity:.85}
+.sheet.picker .modes{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 4px 8px;padding:4px;background:#e7ebef;border-radius:14px}
+.sheet.picker .modes button{margin:0;padding:9px 4px 8px;background:transparent;color:#4a5158;font:700 17px var(--cond);text-transform:uppercase;letter-spacing:.3px;display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:11px}
+.sheet.picker .modes button small{font:600 12px var(--cond);text-transform:none;letter-spacing:0;opacity:.8}
+.sheet.picker .modes button.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 .sheet.picker .opts button.warn{background:#fff;color:var(--over);box-shadow:inset 0 0 0 2px var(--over)}
 .sheet.picker .now .bad{color:var(--over);font-weight:700}
 .sheet.picker .other{margin-top:8px;background:#eef1f4;color:var(--ink);font-family:var(--cond);font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.3px}
@@ -148,7 +152,7 @@ body:has(.sheet.open) .toast.show{transform:translateX(-50%) translateY(0)}
   <button id="closeSheet">Sluiten</button>
   <p class="ver">Versie <span id="ver"></span></p>
 </div>
-<div class="sheet picker" id="picker"><h3></h3><p class="now"></p><div class="opts"></div>
+<div class="sheet picker" id="picker"><h3></h3><p class="now"></p><div class="modes" hidden></div><div class="opts"></div>
   <button id="otherBtn" class="other">Anders…</button>
   <form id="otherForm" class="otherrow" hidden><label for="otherInput" class="sr">Eigen hoeveelheid</label><input id="otherInput" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" enterkeyhint="done"><span class="unit"></span><button type="submit">Toevoegen</button></form>
   <p class="hint" id="otherHint" aria-live="polite"></p>
@@ -172,16 +176,18 @@ const G = {
 G.check='<path d="M9.2 18.6 3.4 12.8l2.3-2.3 3.5 3.5 9.1-9.1 2.3 2.3z"/>';
 G.more='<circle cx="5" cy="12" r="2.3"/><circle cx="12" cy="12" r="2.3"/><circle cx="19" cy="12" r="2.3"/>';
 const ITEMS = [
-  {id:'volkoren', name:'Volkoren', portions:[35,70,105,140], portionNotes:{35:'1 snee',70:'2 sneetjes',105:'3 sneetjes',140:'4 sneetjes'}, slice:35, roundTo:17.5, unit:'g', goalAmt:280, capAmt:280, target:1, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram. Maximaal 8 × 35 = 280 gram per dag.'},
+  {id:'volkoren', name:'Volkoren', portions:[35,70,105,140], portionNotes:{35:'1 snee',70:'2 sneetjes',105:'3 sneetjes',140:'4 sneetjes'}, per:{size:35,one:'snee',many:'sneetjes'}, roundTo:17.5, unit:'g', goalAmt:280, capAmt:280, target:1, kind:'goal', icon:'wheat', page:1, help:'1 boterham heeft standaard een gewicht van 35 gram. 4 scheppen is gelijk aan 35 gram. Maximaal 8 × 35 = 280 gram per dag.'},
   {id:'zuivel',   name:'Zuivel',   portions:[125,250,300,500], unit:'ml', goalAmt:600, capAmt:800, target:1, kind:'goal', icon:'milk', page:1, amt:'600–800 ml'},
   {id:'fruit',    name:'Fruit',    target:3, kind:'goal', icon:'apple', page:1},
   {id:'kaas',     name:'Kaas',     target:2, kind:'max',  icon:'cheese', page:1},
   {id:'pindakaas',name:'Pindakaas',target:3, kind:'max',  icon:'peanut', page:1},
   {id:'eiwit',    name:'Eiwitpoeder', target:2, kind:'max', icon:'shaker', page:1, help:'Een scoop is 25–30 gram. Maximaal 2 scoops per dag.'},
   {id:'groenten', name:'Groenten', target:1, amt:'≥ 200 g', kind:'goal', icon:'broccoli', page:2},
-  {id:'graan',    name:'Granen',   target:1, kind:'goal', icon:'rice', page:2, modes:{raw:{label:'ongekookt',amt:'75–100 g'},cooked:{label:'gekookt',amt:'200–250 g'}}},
+  {id:'graan',    name:'Granen',   unit:'g', target:1, kind:'goal', icon:'rice', page:2, modes:{
+    raw:{label:'ongekookt',amt:'75–100 g',portions:[25,50,75,100],goalAmt:75,capAmt:100},
+    cooked:{label:'gekookt',amt:'200–250 g',portions:[50,100,150,200],goalAmt:200,capAmt:250}}},
   {id:'eiwitbron',name:'Eiwitbron', target:1, amt:'100–135 g', kind:'goal', icon:'bean', page:2},
-  {id:'olijfolie',name:'Olijfolie', target:1, amt:'1 eetlepel', kind:'goal', icon:'olive', page:2},
+  {id:'olijfolie',name:'Olijfolie', portions:[10,20], portionNotes:{10:'1 eetlepel',20:'2 eetlepels'}, per:{size:10,one:'eetlepel',many:'eetlepels'}, roundTo:10, unit:'g', goalAmt:10, capAmt:null, target:1, kind:'goal', icon:'olive', page:2},
 ];
 const GOALS=ITEMS.filter(i=>i.kind==='goal');
 const KEY='voedingscheck.v1';
@@ -191,6 +197,8 @@ function load(){
   try{const s=JSON.parse(localStorage.getItem(KEY)||'null');
     if(s&&s.date===todayKey()&&s.counts){ s.modes=s.modes||{}; s.portions=s.portions||{};
       if(s.counts.volkoren && !s.portions.volkoren){ s.portions.volkoren=Array(s.counts.volkoren).fill(35); delete s.counts.volkoren; }
+      if(s.counts.graan && !s.portions.graan){ s.portions.graan=[(s.modes.graan==='cooked')?200:75]; delete s.counts.graan; }
+      if(s.counts.olijfolie && !s.portions.olijfolie){ s.portions.olijfolie=[10]; delete s.counts.olijfolie; }
       return s; }}catch(e){}
   return {date:todayKey(),counts:{},modes:{},portions:{}};
 }
@@ -199,16 +207,24 @@ function rollover(){ if(state.date!==todayKey()){state={date:todayKey(),counts:{
 
 const R=45.5, C=2*Math.PI*R;
 const fmt=(n)=> Number.isInteger(n) ? String(n) : (Math.round(n*10)/10).toFixed(1).replace('.',',');
-const slices=(it,g)=>{ const n=g/it.slice; return n===1 ? '1 snee' : `${fmt(n)} ${n<1?'snee':'sneetjes'}`; };
+const slices=(it,g)=>{ const p=it.per; const n=g/p.size; return n===1 ? `1 ${p.one}` : `${fmt(n)} ${n<1?p.one:p.many}`; };
 const portionsOf=(it)=> state.portions[it.id]||[];
+const P=(it)=> it.modes ? Object.assign({},it,it.modes[(state.modes[it.id]||'raw')]) : it;
+const isPortion=(it)=> !!P(it).portions;
+const hasCap=(it)=> P(it).capAmt!=null;
 const total=(it)=> portionsOf(it).reduce((a,b)=>a+b,0);
-const amount=(it,n)=> it.portions ? total(it) : it.step ? n*it.step : n;
-const isOver=(it,n)=> it.portions ? total(it)>it.capAmt : (it.kind==='max' && n>it.target);
-const isDone=(it,n)=> it.portions ? (total(it)>=it.goalAmt && total(it)<=it.capAmt) : it.capAmt ? n>=it.target : n===it.target;
+const amount=(it,n)=> isPortion(it) ? total(it) : it.step ? n*it.step : n;
+const isOver=(it,n)=> isPortion(it) ? (hasCap(it) && total(it)>P(it).capAmt) : (it.kind==='max' && n>it.target);
+const isDone=(it,n)=> isPortion(it) ? (total(it)>=P(it).goalAmt && !isOver(it,n)) : it.capAmt ? n>=it.target : n===it.target;
 const modeOf=(it)=> it.modes ? (state.modes[it.id]||'raw') : null;
 const amtLabel=(it)=>{
-  if(it.modes) return it.modes[modeOf(it)].amt;
-  if(it.portions){ const left=it.capAmt-total(it); return left>0 ? `nog ${fmt(left)} ${it.unit} tot ${it.capAmt}` : left===0 ? `${it.capAmt} ${it.unit} · maximum` : `${fmt(-left)} ${it.unit} te veel`; }
+  const c=P(it), t=total(it), pre=it.modes ? c.label+' · ' : '';
+  if(c.portions){
+    if(!hasCap(it)){ const need=c.goalAmt-t; return need>0 ? `nog ${fmt(need)} ${c.unit}${c.per?` · ${slices(c,need)}`:''}` : `${fmt(t)} ${c.unit} · doel gehaald`; }
+    if(it.modes && t===0) return pre+c.amt;
+    const left=c.capAmt-t; return left>0 ? `${pre}nog ${fmt(left)} ${c.unit} tot ${c.capAmt}` : left===0 ? `${pre}${c.capAmt} ${c.unit} · maximum` : `${pre}${fmt(-left)} ${c.unit} te veel`;
+  }
+  if(it.modes) return c.amt;
   return it.amt||'';
 };
 G.help='<path d="M12 2.5a9.5 9.5 0 100 19 9.5 9.5 0 000-19zm.1 15.3a1.4 1.4 0 110-2.8 1.4 1.4 0 010 2.8zm1.5-5.6c-.7.5-.9.8-.9 1.6h-2.2c0-1.6.6-2.3 1.6-3 .6-.4.9-.7.9-1.3 0-.7-.5-1.1-1.2-1.1-.8 0-1.3.5-1.4 1.3H8.2c.1-2 1.6-3.3 3.7-3.3 2.1 0 3.6 1.2 3.6 3 0 1.3-.7 2.1-1.9 2.8z"/>';
@@ -216,8 +232,8 @@ G.swap='<path d="M7 7h9.2l-2.1-2.1L15.5 3.5 20 8l-4.5 4.5-1.4-1.4L16.2 9H7V7zm10
 function ringSVG(){return `<svg class="r" viewBox="0 0 100 100"><circle class="disc" cx="50" cy="50" r="50"/><circle class="track" cx="50" cy="50" r="${R}"/><circle class="bar" cx="50" cy="50" r="${R}" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}"/></svg>`}
 function tileHTML(it){
   const pre = it.kind==='max' ? '<span class="pre">⊘</span>' : '<span class="pre">♥</span>';
-  const amt = (it.amt||it.modes||it.portions) ? `<span class="amt">${amtLabel(it)}</span>` : '';
-  const n = (it.step||it.portions) ? `<div class="n"><span class="v">0</span> ${it.unit}</div>`
+  const amt = (it.amt||it.modes||isPortion(it)) ? `<span class="amt">${amtLabel(it)}</span>` : '';
+  const n = (it.step||isPortion(it)) ? `<div class="n"><span class="v">0</span> ${it.unit}</div>`
         : it.target>1 ? `<div class="n"><span class="v">0</span>/${it.target}</div>` : `<div class="n" hidden><span class="v">0</span></div>`;
   const sat = it.help ? `<span class="sat" data-help="${it.id}" aria-label="Uitleg"><svg viewBox="0 0 24 24">${G.help}</svg></span>`
             : it.modes ? `<span class="sat" data-mode="${it.id}" aria-label="Wissel gekookt/ongekookt"><svg viewBox="0 0 24 24">${G.swap}</svg></span>` : '';
@@ -237,11 +253,11 @@ function renderAll(){
 }
 function update(it, pop){
   const n=state.counts[it.id]||0, el=document.getElementById('t-'+it.id);
-  const frac=it.portions ? Math.min(total(it)/it.goalAmt,1) : Math.min(n/it.target,1);
+  const frac=isPortion(it) ? Math.min(total(it)/P(it).goalAmt,1) : Math.min(n/it.target,1);
   el.querySelector('.bar').style.strokeDashoffset=(C*(1-frac)).toFixed(2);
   el.querySelector('.v').textContent=fmt(amount(it,n));
   const a=el.querySelector('.amt'); if(a) a.textContent=amtLabel(it);
-  el.dataset.n=it.portions ? portionsOf(it).length : n;
+  el.dataset.n=isPortion(it) ? portionsOf(it).length : n;
   el.classList.toggle('done', isDone(it,n));
   el.classList.toggle('over', isOver(it,n));
   if(pop){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
@@ -263,8 +279,8 @@ function addPortion(it,ml){
   const was=isDone(it,0);
   (state.portions[it.id]=portionsOf(it)).push(ml); save(); update(it,true); markRecent(el);
   if(navigator.vibrate) navigator.vibrate(isOver(it,0)?[20,40,20]:isDone(it,0)&&!was?[10,30,10]:8);
-  if(isOver(it,0)) toast(`${it.name}: ${fmt(total(it)-it.capAmt)} ${it.unit} te veel vandaag`);
-  else if(isDone(it,0)&&!was) toast(`${it.name}: ${it.goalAmt} ${it.unit} gehaald`);
+  if(isOver(it,0)) toast(`${it.name}: ${fmt(total(it)-P(it).capAmt)} ${it.unit} te veel vandaag`);
+  else if(isDone(it,0)&&!was) toast(`${it.name}: ${fmt(P(it).goalAmt)} ${it.unit} gehaald`);
   renderPicker(it);
 }
 function removePortion(it){
@@ -277,7 +293,7 @@ document.getElementById('otherInput').addEventListener('input',e=>{
   const v=parseInt(String(e.target.value).replace(/[^0-9]/g,''),10);
   if(!it||!it.roundTo||!v){ h.textContent=''; return; }
   const add=Math.round(v/it.roundTo)*it.roundTo;
-  h.textContent = add===0 ? 'Minder dan een halve snee' : `Wordt ${fmt(add)} g · ${slices(it,add)}`;
+  h.textContent = add===0 ? `Minder dan een halve ${it.per.one}` : `Wordt ${fmt(add)} g · ${slices(it,add)}`;
 });
 document.getElementById('otherForm').addEventListener('submit',e=>{
   e.preventDefault();
@@ -287,7 +303,7 @@ document.getElementById('otherForm').addEventListener('submit',e=>{
   if(v>2000){ toast(`Dat is meer dan 2000 ${it.unit}, klopt dat niet?`); inp.focus(); return; }
   let add=v;
   if(it.roundTo){ add=Math.round(v/it.roundTo)*it.roundTo;
-    if(add===0){ toast(`Minder dan een halve snee (${fmt(it.roundTo)} g), niet toegevoegd`); inp.focus(); return; } }
+    if(add===0){ toast(`Minder dan een halve ${it.per.one}, niet toegevoegd`); inp.focus(); return; } }
   addPortion(it,add); document.getElementById('otherHint').textContent='';
   if(add!==v) setTimeout(()=>toast(`${v} g afgerond naar ${fmt(add)} g (${slices(it,add)})`),50); inp.value=''; document.getElementById('otherForm').hidden=true; document.getElementById('otherBtn').hidden=false; inp.blur();
 });
@@ -296,14 +312,18 @@ if(window.visualViewport){ const vv=window.visualViewport; const kb=()=>document
 function renderPicker(it){
   const pk=document.getElementById('picker'); pk.dataset.id=it.id;
   pk.querySelector('h3').textContent=it.name;
-  const t=total(it), left=it.capAmt-t;
-  pk.classList.toggle('isover', left<0);
-  pk.querySelector('.now').innerHTML=`<b>${fmt(t)} ${it.unit}</b>${it.slice?` (${slices(it,t)})`:''} vandaag · ${left>0?`nog ${fmt(left)} ${it.unit} tot ${it.capAmt}`:left===0?'maximum bereikt':`<span class="bad">${fmt(-left)} ${it.unit} te veel</span>`}`;
-  pk.querySelector('.opts').style.gridTemplateColumns=`repeat(${it.portions.length},1fr)`;
-  pk.querySelector('.opts').innerHTML=it.portions.map(ml=>{const note=(it.portionNotes&&it.portionNotes[ml])||it.unit; const warn=t+ml>it.capAmt;
+  const c=P(it), t=total(it), cap=hasCap(it), left=cap ? c.capAmt-t : null;
+  pk.classList.toggle('isover', cap && left<0);
+  const status = !cap ? (t<c.goalAmt ? `nog ${fmt(c.goalAmt-t)} ${c.unit} tot het doel` : 'doel gehaald')
+               : left>0 ? `nog ${fmt(left)} ${c.unit} tot ${c.capAmt}` : left===0 ? 'maximum bereikt' : `<span class="bad">${fmt(-left)} ${c.unit} te veel</span>`;
+  pk.querySelector('.now').innerHTML=`<b>${fmt(t)} ${c.unit}</b>${c.per&&t>0?` (${slices(c,t)})`:''} vandaag · ${status}`;
+  const ms=pk.querySelector('.modes'); ms.hidden=!it.modes;
+  if(it.modes){ const cur=state.modes[it.id]||'raw'; ms.innerHTML=Object.entries(it.modes).map(([k,m])=>`<button data-setmode="${k}" class="${k===cur?'on':''}" aria-pressed="${k===cur}">${m.label[0].toUpperCase()+m.label.slice(1)}<small>${m.amt}</small></button>`).join(''); }
+  pk.querySelector('.opts').style.gridTemplateColumns=`repeat(${c.portions.length},1fr)`;
+  pk.querySelector('.opts').innerHTML=c.portions.map(ml=>{const note=(c.portionNotes&&c.portionNotes[ml])||c.unit; const warn=cap && t+ml>c.capAmt;
     return `<button data-ml="${ml}" class="${warn?'warn':''}">+${ml}<small>${warn?'te veel':note}</small></button>`}).join('');
   pk.querySelector('.unit').textContent=it.unit;
-  pk.querySelector('#otherInput').placeholder= it.unit==='ml' ? 'bijv. 180' : 'bijv. 50';
+  pk.querySelector('#otherInput').placeholder= it.unit==='ml' ? 'bijv. 180' : it.per&&it.per.size===10 ? 'bijv. 15' : 'bijv. 50';
   const log=portionsOf(it); pk.querySelector('.log').textContent= log.length ? 'Vandaag: '+log.map(x=>fmt(x)+' '+it.unit).join(' + ') : 'Nog niets toegevoegd';
   pk.classList.add('open');
 }
@@ -331,33 +351,39 @@ let tmr=null, held=false, tid=null, sx=0;
 document.body.addEventListener('pointerdown',e=>{
   if(e.target.closest('.minus,.sat')) return;
   const t=e.target.closest('.tile[data-id]'); if(!t) return; held=false; tid=t.dataset.id; sx=e.clientX;
-  tmr=setTimeout(()=>{held=true;const it=ITEMS.find(i=>i.id===tid); it.portions?removePortion(it):bump(tid,-1)},500);
+  tmr=setTimeout(()=>{held=true;const it=ITEMS.find(i=>i.id===tid); isPortion(it)?removePortion(it):bump(tid,-1)},500);
 });
 ['pointerup','pointercancel','pointerleave'].forEach(ev=>document.body.addEventListener(ev,e=>{
   if(!tmr) return; clearTimeout(tmr); tmr=null;
   const t=e.target.closest('.tile[data-id]');
   if(ev==='pointerup'&&t&&!held&&t.dataset.id===tid&&Math.abs(e.clientX-sx)<12){
     const it=ITEMS.find(i=>i.id===tid);
-    if(it.portions){ renderPicker(it); return; }
+    if(isPortion(it)){ renderPicker(it); return; }
     bump(tid, (it.target===1 && (state.counts[tid]||0)>=1) ? -1 : +1);
   }
 }));
 document.body.addEventListener('click',e=>{
-  const m=e.target.closest('.minus'); if(m){e.stopPropagation();const it=ITEMS.find(i=>i.id===m.dataset.minus); it.portions?removePortion(it):bump(m.dataset.minus,-1);return;}
+  const m=e.target.closest('.minus'); if(m){e.stopPropagation();const it=ITEMS.find(i=>i.id===m.dataset.minus); isPortion(it)?removePortion(it):bump(m.dataset.minus,-1);return;}
+  const sm=e.target.closest('#picker [data-setmode]'); if(sm){const it=ITEMS.find(i=>i.id===document.getElementById('picker').dataset.id); setMode(it,sm.dataset.setmode); return;}
   const pb=e.target.closest('#picker [data-ml]'); if(pb){const it=ITEMS.find(i=>i.id===document.getElementById('picker').dataset.id); addPortion(it,+pb.dataset.ml); return;}
   if(e.target.closest('#closePicker')){closePicker();return;}
   if(e.target.closest('#otherBtn')){const f=document.getElementById('otherForm'); f.hidden=false; document.getElementById('otherBtn').hidden=true; const i=document.getElementById('otherInput'); i.value=''; document.getElementById('otherHint').textContent=''; i.focus(); return;}
   const h=e.target.closest('[data-help]'); if(h){e.stopPropagation();const it=ITEMS.find(i=>i.id===h.dataset.help);showInfo(it.name,it.help);return;}
   const w=e.target.closest('[data-mode]'); if(w){e.stopPropagation();const it=ITEMS.find(i=>i.id===w.dataset.mode);
-    const next=modeOf(it)==='raw'?'cooked':'raw'; state.modes[it.id]=next; save(); update(it,true);
-    toast(`${it.name} vandaag ${it.modes[next].label}: ${it.modes[next].amt}`); return;}
+    setMode(it, modeOf(it)==='raw'?'cooked':'raw'); return;}
 });
+function setMode(it,next){
+  if((state.modes[it.id]||'raw')===next) return;
+  state.modes[it.id]=next; save(); update(it,true);
+  toast(`${it.name} vandaag ${it.modes[next].label}: ${it.modes[next].amt}`);
+  const pk=document.getElementById('picker'); if(pk.classList.contains('open')&&pk.dataset.id===it.id) renderPicker(it);
+}
 function showInfo(title,text){const i=document.getElementById('info');i.querySelector('h3').textContent=title;i.querySelector('p').textContent=text;i.classList.add('open');}
 document.getElementById('closeInfo').addEventListener('click',()=>document.getElementById('info').classList.remove('open'));
 document.body.addEventListener('contextmenu',e=>{if(e.target.closest('.tile'))e.preventDefault()});
 document.getElementById('closeSheet').addEventListener('click',()=>document.getElementById('sheet').classList.remove('open'));
 let armed=false, armT;
-const VERSION='v20';
+const VERSION='v21';
 function setAppH(){
   const typing=document.activeElement&&document.activeElement.tagName==='INPUT';
   const h=window.innerHeight, w=window.innerWidth, root=document.documentElement;
