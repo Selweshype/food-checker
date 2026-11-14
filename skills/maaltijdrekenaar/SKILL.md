@@ -25,7 +25,7 @@ Een ander product, of een etiket met een andere waarde: `--item naam:gram:kh_per
 
 ## Werkwijze
 
-1. **Ingrediënten verzamelen.** Uit gesproken tekst, een recept-link of een foto van een kookboek. Haal alleen de koolhydraatbronnen eruit met hun gewicht. Ei, kaas, room, groente, vlees en vis tellen niet mee. Rekent het recept voor meer personen dan Wessel kookt, schaal dan eerst naar zijn aantal. Zet stuks om naar gram: 1 vel bladerdeeg ≈ 47 g (of wat Wessel zegt), kleine volkoren wrap ≈ 40 g, grote ≈ 70 g, middelgrote aardappel ≈ 150 g.
+1. **Ingrediënten verzamelen.** Uit gesproken tekst, een recept-link of een foto van een kookboek. Haal alleen de koolhydraatbronnen eruit met hun gewicht. Ei, kaas, room, groente, vlees en vis tellen niet mee. Rekent het recept voor meer personen dan Wessel kookt, schaal dan eerst naar zijn aantal. Zet stuks om naar gram: 1 vel bladerdeeg = 47 g (vaste waarde van Wessel; ±17 g koolhydraten per vel), kleine volkoren wrap ≈ 40 g, grote ≈ 70 g, middelgrote aardappel ≈ 150 g.
 2. **Ontbreekt er iets wezenlijks** (gewicht van een koolhydraatbron, of bij Vraag 1 welk product hij wil bijvullen), stel dan één korte vraag. Ontbreekt alleen iets kleins, neem een redelijke aanname en noem die.
 3. **Bepaal de vraag.**
    - *Vraag 1, vooraf:* "hoeveel X kan ik toevoegen" → gebruik `--zoek X` met de vaste bronnen als `--item`.
