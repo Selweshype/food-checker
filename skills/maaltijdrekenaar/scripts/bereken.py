@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""Maaltijdrekenaar: koolhydraten in een gemengde avondmaaltijd, gerekend in 'portiegram'.
+
+1 portiegram = 1 g ongekookt graanproduct (droge pasta, rijst, couscous, noedels).
+Grens per avondmaaltijd (dietist-PDF): 75-100 g ongekookt = 200-250 g gekookt.
+Andere producten tellen naar rato van hun koolhydraten: kh per 100 g / 70.
+
+Voorbeelden:
+  bereken.py --item bladerdeeg:188 --item aardappel_rauw:190
+  bereken.py --item bladerdeeg:188 --zoek aardappel_rauw
+  bereken.py --item bladerdeeg:188 --item aardappel_rauw:190 --gewicht 1650 --stukken 8
+  bereken.py --item "linzenpasta:150:52"        (eigen product: naam:gram:kh_per_100g)
+"""
+import argparse, math, sys
+
+REF_KH = 70.0          # kh per 100 g droog graanproduct (referentie)
+DOEL, MAX = 75.0, 100.0  # portiegram per persoon bij het avondeten
+GEKOOKT = 0.4          # 1 g gekookt graan = 0,4 portiegram (250 g gekookt = 100 g droog)
+
+# naam: (factor portiegram per gram, uitleg)
+P = {
+  'pasta_droog':(1,'pasta droog'), 'pasta_gekookt':(GEKOOKT,'pasta gekookt'),
+  'volkoren_rijst_droog':(1,'volkoren rijst droog'), 'volkoren_rijst_gekookt':(GEKOOKT,'volkoren rijst gekookt'),
+  'japanse_rijst_droog':(1,'Japanse rijst droog'), 'japanse_rijst_gekookt':(GEKOOKT,'Japanse rijst gekookt'),
+  'couscous_droog':(1,'couscous droog'), 'couscous_gekookt':(GEKOOKT,'couscous gewel'),
+  'soba_droog':(1,'soba droog'), 'ramen_droog':(1,'ramen droog'), 'udon_droog':(1,'udon droog'),
+  'noedels_gekookt':(GEKOOKT,'noedels gekookt'),
+  'udon_voorgekookt':(22/REF_KH,'udon voorgekookt (vacuümpak, ±22 g kh/100 g)'),
+  'bladerdeeg':(36/REF_KH,'bladerdeeg (±36 g kh/100 g)'),
+  'aardappel_rauw':(15/REF_KH,'aardappel rauw (±15 g kh/100 g)'),
+  'aardappel_gekookt':(15/REF_KH,'aardappel gekookt (±15 g kh/100 g)'),
+  'zoete_aardappel_rauw':(17/REF_KH,'zoete aardappel rauw (±17 g kh/100 g)'),
+  'zoete_aardappel_gekookt':(17/REF_KH,'zoete aardappel gekookt (±17 g kh/100 g)'),
+  'volkoren_wrap':(45/REF_KH,'volkoren wrap (±45 g kh/100 g; klein ±40 g, groot ±70 g)'),
+}
+
+def f(x):
+    return (f"{x:.0f}" if abs(x-round(x))<0.05 else f"{x:.1f}").replace('.',',')
+
+def item(s):
+    parts=s.split(':')
+    naam=parts[0].strip().lower().replace(' ','_').replace('-','_')
+    gram=float(parts[1].replace(',','.')) if len(parts)>1 and parts[1] else None
+    if len(parts)>2:
+        kh=float(parts[2].replace(',','.')); return naam,gram,kh/REF_KH,f"{naam} (eigen waarde {f(kh)} g kh/100 g)"
+    if naam not in P: sys.exit(f"Onbekend product '{naam}'. Kies uit: {', '.join(sorted(P))}, of geef naam:gram:kh_per_100g.")
+    return naam,gram,P[naam][0],P[naam][1]
+
+a=argparse.ArgumentParser()
+a.add_argument('--item',action='append',default=[],help='naam:gram of naam:gram:kh_per_100g')
+a.add_argument('--aandeel',type=float,default=0.6,help='jouw deel van het gerecht (standaard 0,6)')
+a.add_argument('--zoek',help='product waarvan je wilt weten hoeveel je mag toevoegen (naam of naam::kh)')
+a.add_argument('--gewicht',type=float,help='gewicht van het hele gerecht na bereiden, in gram')
+a.add_argument('--stukken',type=int,help='in hoeveel gelijke stukken het gerecht gesneden wordt')
+r=a.parse_args()
+s=r.aandeel
+items=[item(x) for x in r.item]
+tot=sum(g*fac for _,g,fac,_ in items if g)
+print(f"Jouw deel: {f(s*100)}% · grens per avondmaaltijd: {f(DOEL)}–{f(MAX)} portiegram (= {f(DOEL)}–{f(MAX)} g ongekookt of {f(DOEL/GEKOOKT)}–{f(MAX/GEKOOKT)} g gekookt graanproduct)\n")
+print("Koolhydraten in het hele gerecht:")
+for n,g,fac,u in items:
+    if g: print(f"  {u}: {f(g)} g = {f(g*fac)} portiegram")
+print(f"  Totaal: {f(tot)} portiegram · jouw deel {f(tot*s)}\n")
+
+if r.zoek:
+    n,_,fac,u=item(r.zoek if ':' in r.zoek else r.zoek+':')
+    ruimte_max=MAX/s-tot; ruimte_doel=DOEL/s-tot
+    print(f"VRAAG 1 · Hoeveel {u.split(' (')[0]} mag erbij?")
+    if ruimte_max<=0:
+        print(f"  Niets meer: jouw deel is zonder {u.split(' (')[0]} al {f(tot*s)} portiegram (max {f(MAX)}).")
+    else:
+        lo=max(0,ruimte_doel)/fac; hi=ruimte_max/fac
+        print(f"  Voor het hele gerecht: {f(lo)}–{f(hi)} g · advies hoogstens {f(math.floor(hi/10)*10)} g")
+        print(f"  (dan krijg jij {f(DOEL)}–{f(MAX)} portiegram binnen met {f(s*100)}% van het gerecht)")
+    print()
+
+mijn=tot*s
+status = 'te weinig' if mijn<DOEL else ('binnen je grens ✓' if mijn<=MAX else f'{f(mijn-MAX)} portiegram te veel ✗')
+print(f"CONTROLE · met {f(s*100)}% van het gerecht krijg jij {f(mijn)} portiegram: {status}")
+if tot>0:
+    fr_max=min(1,MAX/tot); fr_doel=min(1,DOEL/tot)
+    print(f"VRAAG 2 · Hoeveel mag je opscheppen?")
+    print(f"  Je mag {f(fr_doel*100)}–{f(fr_max*100)}% van het hele gerecht nemen.")
+    if r.gewicht: print(f"  Weeg je bord: {f(fr_doel*r.gewicht)}–{f(fr_max*r.gewicht)} g van de {f(r.gewicht)} g.")
+    if r.stukken:
+        mx=fr_max*r.stukken
+        print(f"  Bij {r.stukken} gelijke stukken: maximaal {f(math.floor(mx*2)/2)} stuk{'ken' if mx>=1.5 else ''} ({f(mx)} precies).")
