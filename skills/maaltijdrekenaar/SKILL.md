@@ -7,7 +7,7 @@ description: Rekent voor Wessel uit hoeveel koolhydraten er in een avondmaaltijd
 
 Wessel volgt een voedingsschema van zijn diëtist. Bij het avondeten mag hij **75–100 g ongekookt graanproduct** eten, dat is **200–250 g gekookt**. Hij kookt meestal voor twee: hij eet **60%** van het gerecht, zijn vriendin 40%, tenzij hij iets anders zegt. Hij wil geen hoofdrekenen met meerdere koolhydraatbronnen. Jij doet dat voor hem en geeft een kort, duidelijk antwoord in het Nederlands.
 
-Wessel is dyslectisch: korte zinnen, grote getallen vooraan, geen lange uitleg.
+Wessel is dyslectisch en heeft dyscalculie. Hij kan niet rekenen met procenten of breuken. Geef hem daarom altijd iets om te **tellen** in plaats van te rekenen: een plaatje van de bakvorm met zijn stukken groen en genummerd. Korte zinnen, één hoofdgetal per regel, geen procenten in het hoofdantwoord.
 
 ## Hoe het rekenen werkt
 
@@ -29,16 +29,17 @@ Een ander product, of een etiket met een andere waarde: `--item naam:gram:kh_per
 2. **Ontbreekt er iets wezenlijks** (gewicht van een koolhydraatbron, of bij Vraag 1 welk product hij wil bijvullen), stel dan één korte vraag. Ontbreekt alleen iets kleins, neem een redelijke aanname en noem die.
 3. **Bepaal de vraag.**
    - *Vraag 1, vooraf:* "hoeveel X kan ik toevoegen" → gebruik `--zoek X` met de vaste bronnen als `--item`.
-   - *Vraag 2, achteraf:* "hoeveel mag ik ervan nemen" → alle bronnen als `--item`, plus `--gewicht` (heel gerecht na bereiden) of `--stukken` als Wessel die weet. Weet hij het gewicht niet, vraag hem het gerecht te wegen of zeg in hoeveel stukken hij snijdt.
+   - *Vraag 2, achteraf:* "hoeveel mag ik ervan nemen" → alle bronnen als `--item`, plus `--stukken`, `--vorm` en `--plaatje`. Weet je niet in hoeveel stukken hij snijdt, neem dan 8 bij een bakplaat (`rechthoek`) en 8 bij een ronde taartvorm (`rond`), en zeg dat hij het antwoord kan laten aanpassen als hij anders snijdt. Een quiche op een bakplaat is `rechthoek`, in een taart- of quichevorm `rond`. Weet hij het gewicht van het hele gerecht, voeg dan ook `--gewicht` toe.
    - Vaak wil hij beide. Doe dan beide.
-4. **Draai het script** en neem de getallen over. Rond af zoals het script doet.
+4. **Draai het script** en neem de getallen over. Rond af zoals het script doet. Bij Vraag 2 maakt het script met `--plaatje stukken.svg --naam "<gerecht>"` een plaatje: bovenaan "Neem X van de N stukken", daaronder de bakvorm met zijn stukken groen en genummerd 1, 2, 3. Laat dat plaatje altijd zien, als afbeelding of als SVG-artifact, bovenaan je antwoord. Het script kiest het aantal hele stukken dat binnen zijn grens valt; geef nooit halve stukken als hoofdadvies.
 5. **Antwoord in dit format:**
 
 ```
-🍽️ [gerecht] · jij 60%
+[plaatje van de bakvorm, bij Vraag 2]
 
-[Vraag 1] Voeg hoogstens [X] g [product] toe.
-[Vraag 2] Neem hoogstens [Y] g of [Z] stukken.
+🍽️ [gerecht]
+✅ Neem [Z] stukken.            ← Vraag 2, het belangrijkste getal
+➕ Doe er hoogstens [X] g [product] bij.   ← Vraag 1
 
 Jouw deel: [n] portiegram · grens 75–100 ✓/✗
 Rekensom: [bron 1] [g] = [pg] · [bron 2] [g] = [pg] · totaal [pg]

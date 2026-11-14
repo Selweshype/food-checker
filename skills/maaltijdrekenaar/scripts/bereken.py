@@ -52,6 +52,9 @@ a.add_argument('--aandeel',type=float,default=0.6,help='jouw deel van het gerech
 a.add_argument('--zoek',help='product waarvan je wilt weten hoeveel je mag toevoegen (naam of naam::kh)')
 a.add_argument('--gewicht',type=float,help='gewicht van het hele gerecht na bereiden, in gram')
 a.add_argument('--stukken',type=int,help='in hoeveel gelijke stukken het gerecht gesneden wordt')
+a.add_argument('--plaatje',help='bestandsnaam voor een plaatje van de bakvorm (svg), bijv. quiche.svg')
+a.add_argument('--vorm',choices=['rechthoek','rond'],default='rechthoek',help='bakplaat (rechthoek) of taartvorm (rond)')
+a.add_argument('--naam',default='Gerecht',help='naam van het gerecht voor in het plaatje')
 r=a.parse_args()
 s=r.aandeel
 items=[item(x) for x in r.item]
@@ -74,6 +77,35 @@ if r.zoek:
         print(f"  (dan krijg jij {f(DOEL)}–{f(MAX)} portiegram binnen met {f(s*100)}% van het gerecht)")
     print()
 
+def svg(n,neem,vorm,naam,mijn_pg):
+    G,O,L,T='#2fb45d','#e9edf1','#9aa3ab','#101418'
+    W,H=640,520
+    out=[f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" font-family="Arial,Helvetica,sans-serif">',
+         f'<rect width="{W}" height="{H}" fill="#fff"/>',
+         f'<text x="{W/2}" y="52" text-anchor="middle" font-size="40" font-weight="700" fill="{T}">Neem {neem} van de {n} stukken</text>',
+         f'<text x="{W/2}" y="86" text-anchor="middle" font-size="22" fill="#4a5158">{naam} · groen = jouw stukken</text>']
+    if vorm=='rechthoek':
+        rows=1 if n<=4 else 2 if n<=10 else 3 if n<=15 else 4
+        cols=math.ceil(n/rows); x0,y0,w,h=40,120,W-80,H-160
+        out.append(f'<rect x="{x0-10}" y="{y0-10}" width="{w+20}" height="{h+20}" rx="18" fill="#c9cfd5"/>')
+        cw,ch=w/cols,h/rows
+        for i in range(n):
+            r_,c=divmod(i,cols); x,y=x0+c*cw,y0+r_*ch; mine=i<neem
+            out.append(f'<rect x="{x+3}" y="{y+3}" width="{cw-6}" height="{ch-6}" rx="10" fill="{G if mine else O}"/>')
+            out.append(f'<text x="{x+cw/2}" y="{y+ch/2+16}" text-anchor="middle" font-size="44" font-weight="700" fill="{"#fff" if mine else L}">{i+1 if mine else ""}</text>')
+    else:
+        cx,cy,R=W/2,120+(H-150)/2,(H-160)/2
+        out.append(f'<circle cx="{cx}" cy="{cy}" r="{R+10}" fill="#c9cfd5"/>')
+        for i in range(n):
+            a1=-math.pi/2+2*math.pi*i/n; a2=-math.pi/2+2*math.pi*(i+1)/n; mine=i<neem
+            x1,y1,x2,y2=cx+R*math.cos(a1),cy+R*math.sin(a1),cx+R*math.cos(a2),cy+R*math.sin(a2)
+            big=1 if a2-a1>math.pi else 0
+            out.append(f'<path d="M{cx},{cy} L{x1:.1f},{y1:.1f} A{R},{R} 0 {big} 1 {x2:.1f},{y2:.1f} Z" fill="{G if mine else O}" stroke="#fff" stroke-width="6"/>')
+            am=(a1+a2)/2
+            if mine: out.append(f'<text x="{cx+R*.62*math.cos(am):.1f}" y="{cy+R*.62*math.sin(am)+15:.1f}" text-anchor="middle" font-size="40" font-weight="700" fill="#fff">{i+1}</text>')
+    out.append('</svg>')
+    return ''.join(out)
+
 mijn=tot*s
 status = 'te weinig' if mijn<DOEL else ('binnen je grens ✓' if mijn<=MAX else f'{f(mijn-MAX)} portiegram te veel ✗')
 print(f"CONTROLE · met {f(s*100)}% van het gerecht krijg jij {f(mijn)} portiegram: {status}")
@@ -83,5 +115,9 @@ if tot>0:
     print(f"  Je mag {f(fr_doel*100)}–{f(fr_max*100)}% van het hele gerecht nemen.")
     if r.gewicht: print(f"  Weeg je bord: {f(fr_doel*r.gewicht)}–{f(fr_max*r.gewicht)} g van de {f(r.gewicht)} g.")
     if r.stukken:
-        mx=fr_max*r.stukken
-        print(f"  Bij {r.stukken} gelijke stukken: maximaal {f(math.floor(mx*2)/2)} stuk{'ken' if mx>=1.5 else ''} ({f(mx)} precies).")
+        n=r.stukken; mx=fr_max*n; mn=fr_doel*n
+        neem=math.ceil(mn-1e-9) if math.ceil(mn-1e-9)<=mx+1e-9 else math.floor(mx+1e-9)
+        print(f"  Bij {n} gelijke stukken: NEEM {neem} STUK{'KEN' if neem!=1 else ''} (mag tussen {f(mn)} en {f(mx)}).")
+        if r.plaatje:
+            open(r.plaatje,'w').write(svg(n,neem,r.vorm,r.naam,mijn_pg=tot*neem/n))
+            print(f"  Plaatje: {r.plaatje}")
