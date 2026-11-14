@@ -55,7 +55,13 @@ a.add_argument('--stukken',type=int,help='in hoeveel gelijke stukken het gerecht
 a.add_argument('--plaatje',help='bestandsnaam voor een plaatje van de bakvorm (svg), bijv. quiche.svg')
 a.add_argument('--vorm',choices=['rechthoek','rond'],default='rechthoek',help='bakplaat (rechthoek) of taartvorm (rond)')
 a.add_argument('--naam',default='Gerecht',help='naam van het gerecht voor in het plaatje')
+a.add_argument('--schaal',choices=['ovenschaal28'],help='vaste bakvorm: ovenschaal28 = Dille & Kamille ovenschaal 28 x 15 cm')
 r=a.parse_args()
+SCHALEN={'ovenschaal28':{'vorm':'rechthoek','l':28,'b':15,'naam':'ovenschaal 28 × 15 cm','stukken':8}}
+SCH=SCHALEN.get(r.schaal)
+if SCH:
+    r.vorm=SCH['vorm']
+    if not r.stukken: r.stukken=SCH['stukken']
 s=r.aandeel
 items=[item(x) for x in r.item]
 tot=sum(g*fac for _,g,fac,_ in items if g)
@@ -80,13 +86,17 @@ if r.zoek:
 def svg(n,neem,vorm,naam,mijn_pg):
     G,O,L,T='#2fb45d','#e9edf1','#9aa3ab','#101418'
     W,H=640,520
+    sub=naam+(' · '+SCH['naam'] if SCH else '')
     out=[f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" font-family="Arial,Helvetica,sans-serif">',
          f'<rect width="{W}" height="{H}" fill="#fff"/>',
          f'<text x="{W/2}" y="52" text-anchor="middle" font-size="40" font-weight="700" fill="{T}">Neem {neem} van de {n} stukken</text>',
-         f'<text x="{W/2}" y="86" text-anchor="middle" font-size="22" fill="#4a5158">{naam} · groen = jouw stukken</text>']
+         f'<text x="{W/2}" y="86" text-anchor="middle" font-size="22" fill="#4a5158">{sub}</text>']
     if vorm=='rechthoek':
-        rows=1 if n<=4 else 2 if n<=10 else 3 if n<=15 else 4
+        rows=1 if n<=3 else 2 if n<=10 else 3 if n<=15 else 4
         cols=math.ceil(n/rows); x0,y0,w,h=40,120,W-80,H-160
+        if SCH:
+            ar=SCH['l']/SCH['b']; h2=min(h,w/ar); y0+= (h-h2)/2; h=h2
+            out.append(f'<text x="{W/2}" y="{y0+h+44}" text-anchor="middle" font-size="22" fill="#4a5158">Elk stuk ±{f(SCH["l"]/cols)} × {f(SCH["b"]/rows)} cm · groen = jouw stukken</text>')
         out.append(f'<rect x="{x0-10}" y="{y0-10}" width="{w+20}" height="{h+20}" rx="18" fill="#c9cfd5"/>')
         cw,ch=w/cols,h/rows
         for i in range(n):
