@@ -131,3 +131,8 @@ if tot>0:
         if r.plaatje:
             open(r.plaatje,'w').write(svg(n,neem,r.vorm,r.naam,mijn_pg=tot*neem/n))
             print(f"  Plaatje: {r.plaatje}")
+    if r.gewicht:
+        if r.stukken: doel_g=r.gewicht*neem/r.stukken
+        else: doel_g=r.gewicht*(fr_doel+fr_max)/2
+        doel_g=min(doel_g, r.gewicht*fr_max)
+        print(f"  WEEGSCHAAL · zet je bord op de weegschaal, druk op 0 en schep tot {f(round(doel_g/10)*10)} g.")

@@ -31,6 +31,8 @@ Een ander product, of een etiket met een andere waarde: `--item naam:gram:kh_per
    - *Vraag 1, vooraf:* "hoeveel X kan ik toevoegen" → gebruik `--zoek X` met de vaste bronnen als `--item`.
    - *Vraag 2, achteraf:* "hoeveel mag ik ervan nemen" → alle bronnen als `--item`, plus `--stukken`, `--vorm` en `--plaatje`. Weet je niet in hoeveel stukken hij snijdt, neem dan 8 bij een bakplaat (`rechthoek`) en 8 bij een ronde taartvorm (`rond`), en zeg dat hij het antwoord kan laten aanpassen als hij anders snijdt. Een quiche op een bakplaat is `rechthoek`, in een taart- of quichevorm `rond`.
 
+     **Weegschaal.** Wessel kan het makkelijkst afwegen: bord op de weegschaal, op 0 zetten, opscheppen tot het getal. Geef daarom bij Vraag 2 altijd ook dat getal, met `--gewicht`. Heeft hij het gebakken gerecht gewogen, gebruik dat gewicht (zonder schaal: weeg schaal met quiche, trek het lege gewicht van de schaal af; doe die aftreksom zelf). Heeft hij niet gewogen, schat het gewicht: tel alle rauwe ingrediënten op (ook ei, room, kaas, groente; 1 ei zonder schaal ≈ 50 g) en haal er 10% af voor vocht dat verdampt bij het bakken. Noem dan in "Aanname" dat het een schatting is en dat wegen na het bakken het precies maakt.
+
      **Vaste ovenschaal.** Wessel en zijn vriendin bakken hun quiche voor twee meestal in een rechthoekige ovenschaal van 28 × 15 × 5,5 cm (Dille & Kamille, wit porselein). Zegt hij "ovenschaal 28", "onze ovenschaal", "de witte ovenschaal" of noemt hij geen vorm bij een quiche of ovenschotel, gebruik dan `--schaal ovenschaal28`. Het plaatje krijgt dan de echte verhouding van de schaal en zegt hoe groot elk stuk is (bij 8 stukken ±7 × 7,5 cm), zodat hij weet waar hij moet snijden. Standaard 8 stukken; geef `--stukken` mee als hij anders snijdt. Weet hij het gewicht van het hele gerecht, voeg dan ook `--gewicht` toe.
    - Vaak wil hij beide. Doe dan beide.
 4. **Draai het script** en neem de getallen over. Rond af zoals het script doet. Bij Vraag 2 maakt het script met `--plaatje stukken.svg --naam "<gerecht>"` een plaatje: bovenaan "Neem X van de N stukken", daaronder de bakvorm met zijn stukken groen en genummerd 1, 2, 3. Laat dat plaatje altijd zien, als afbeelding of als SVG-artifact, bovenaan je antwoord. Het script kiest het aantal hele stukken dat binnen zijn grens valt; geef nooit halve stukken als hoofdadvies.
@@ -41,6 +43,7 @@ Een ander product, of een etiket met een andere waarde: `--item naam:gram:kh_per
 
 🍽️ [gerecht]
 ✅ Neem [Z] stukken.            ← Vraag 2, het belangrijkste getal
+⚖️ Of weeg af: schep tot [G] g op je bord.
 ➕ Doe er hoogstens [X] g [product] bij.   ← Vraag 1
 
 Jouw deel: [n] portiegram · grens 75–100 ✓/✗
